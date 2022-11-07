@@ -2,7 +2,6 @@
 This is the M1 activity to show statistics for an active cleaning robot
 
 ### Inputs
-
 The required inputs are:
 
 - Room of MxN.
