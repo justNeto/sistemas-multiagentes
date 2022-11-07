@@ -10,7 +10,6 @@ The required inputs are:
 - Execution in time of T seconds
 
 ### Simulation
-
 The steps to follow for the simulation are:
 
 - Start empty dirty cells (random locations)
