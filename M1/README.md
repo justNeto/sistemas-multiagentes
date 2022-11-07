@@ -3,6 +3,8 @@ This is the M1 activity to show statistics for an active cleaning robot
 
 ### Inputs
 
+The required inputs are:
+
 - Room of MxN.
 - Number of agents
 - Initial percetange of dirty cells
@@ -10,15 +12,17 @@ This is the M1 activity to show statistics for an active cleaning robot
 
 ### Simulation
 
-Start empty dirty cells (random locations)
+The steps to follow for the simulation are:
 
-All roomba start at [1,1].
+- Start empty dirty cells (random locations)
 
-In every step:
+- All roomba start at [1,1].
+
+- In every step:
 	- If cell is dirty then cleans.
 	- If cell is clean, agent chooses a random location and moves, if cannot move then stays.
 
-Program executes in established time
+- Program executes in established time
 
 ### Analyze the following:
 	Max time until all cells were cleaned (or max time)
