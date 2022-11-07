@@ -3,13 +3,10 @@ This is the M1 activity to show statistics for an active cleaning robot
 
 ### Inputs
 
-Room of MxN.
-
-Number of agents
-
-Initial percetange of dirty cells
-
-Execution in time of T seconds
+- Room of MxN.
+- Number of agents
+- Initial percetange of dirty cells
+- Execution in time of T seconds
 
 ### Simulation
 
