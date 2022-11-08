@@ -14,6 +14,7 @@ class RoombaAgent(mesa.Agent):
     """An agent that sims a roomba"""
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
+        self.num_mov = 0
 
     def move(self):
         check_curr_pos = self.model.grid.get_cell_list_contents([self.pos])
@@ -26,35 +27,35 @@ class RoombaAgent(mesa.Agent):
             self.pos, moore=True, include_center=False
         )
 
-        #result = random.sample(possible_steps, k=len(possible_steps)) # shuffle the list
+        result = random.sample(possible_steps, k=len(possible_steps)) # shuffle the list
         move_to = self.pos
 
-        for steps in possible_steps:
+        for steps in result:
             dirt_found = False
             searching = self.model.grid.get_cell_list_contents([steps])
 
             if len(searching) > 0:
-
                 for agent in searching:
                     if isinstance(agent, RoombaAgent): # if is instance of roomba
                         dirt_found = False
                         break
                     elif isinstance(agent, DirtAgent):
                         dirt_found = True
-                    else:
-                        move_to = steps
             else:
+                move_to = steps
                 continue
 
             if dirt_found is True:
                 move_to = steps
                 self.model.grid.move_agent(self, move_to)
+                self.num_mov += 1
                 return True # did move
             else:
                 continue # if normal found or roomba found continue
 
         self.model.grid.move_agent(self, move_to)
-        return False # did not move at all
+        self.num_mov += 1
+        return False # random movement
 
     def clean(self):
         agents = self.model.grid.get_cell_list_contents([self.pos])

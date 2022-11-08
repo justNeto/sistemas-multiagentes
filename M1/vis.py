@@ -19,15 +19,11 @@ def agent_portrayal(agent):
 
     return portrayal
 
-grid = mesa.visualization.CanvasGrid(agent_portrayal, 5, 5, 500, 500)
+grid = mesa.visualization.CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 server = mesa.visualization.ModularServer(
-        CleaningModel, [grid], "Cleaning model", {"num_of_roombas" : 10 , "dirt_percentage" :  60, "room_width" : 5, "room_height" : 5, "max_num_steps" : 5}
+        CleaningModel, [grid], "Cleaning model", {"num_of_roombas" : 100 , "dirt_percentage" :  60, "room_width" : 50, "room_height" : 50, "max_num_steps" : 100}
 )
-
-# server = mesa.visualization.ModularServer(
-#         CleaningModel, [grid], "Cleaning model", {"num_of_roombas" : 1 , "dirt_percentage" :  100, "room_width" : 5, "room_height" : 5, "max_num_steps" : 5}
-# )
 
 server.port = 8521 # The default
 server.launch()
