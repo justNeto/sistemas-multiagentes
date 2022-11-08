@@ -1,7 +1,6 @@
 import mesa
 import numpy as np
 from itertools import product
-from numpy.random import default_rng
 import random
 
 class DirtAgent(mesa.Agent):
@@ -80,9 +79,8 @@ class CleaningModel(mesa.Model):
             print("Error: invalid value of percentage")
             exit(1)
 
-        print("START OF THE PROGRAM")
-
         # Declare initial data of the model
+        self.total_cells = 0
         self.roombas = num_of_roombas
         self.dirt = dirt_percentage
         self.total_dirts = 0
@@ -95,9 +93,9 @@ class CleaningModel(mesa.Model):
         self.running = True # running while this is true
 
         # Populate the grid with dirt agents
-        total_cells = room_width * room_height
+        self.total_cells = room_width * room_height
         # print(f"Total number of cells are {total_cells}")
-        i_val = round(total_cells * (self.dirt / 100))
+        i_val = round(self.total_cells * (self.dirt / 100))
         self.total_dirts = i_val
         # print(f"Dirt percentage is {self.dirt}")
         # print(f"Number of cells to dirt will actually be {i_val}")
@@ -107,7 +105,6 @@ class CleaningModel(mesa.Model):
 
         com_list = list(product(w_list, h_list))
         result = random.sample(com_list, k=i_val)
-
 
         for i in range(i_val):
             x, y = result[i]
@@ -141,18 +138,21 @@ class CleaningModel(mesa.Model):
         # print(f"Total number of agents is {self.ids}")
 
         # self.datacollector = mesa.DataCollector(
-        #     model_reporters={"Gini": compute_gini}, agent_reporters={"Wealth": "wealth"}
+        #         model_reporters={"Current_steps": get_current_model_steps},
+        #         agent_reporters={}
         # )
 
     def step(self):
-        #self.datacollector.collect(self)
+        # self.datacollector.collect(self)
 
         if self.curr_steps == self.max_steps:
-            print("Warning: maximum number of steps reached!!!")
+            # print("Warning: maximum number of steps reached!!!")
             self.running = False
+            return False
         elif self.total_dirts == 0:
-            print("No more to clean")
+            # print("No more to clean!")
             self.running = False
+            return True
         else:
             self.schedule.step()
             self.curr_steps += 1

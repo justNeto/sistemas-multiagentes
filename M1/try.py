@@ -1,3 +1,3 @@
 from roomba_model import *
 
-model = CleaningModel(1, 10, 5, 5, 5)
+model = CleaningModel(10, 60, 50, 50, 100)
