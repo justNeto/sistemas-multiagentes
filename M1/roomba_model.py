@@ -1,10 +1,14 @@
 import mesa
+import numpy as np
+from itertools import product
+from numpy.random import default_rng
+import random
 
 class DirtAgent(mesa.Agent):
     """An agent that sims dirt"""
 
-    def __init__(self, unique_id, dirtyness, model):
-        super().__init__(unique_id, dirtyness, model)
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
 
 class RoombaAgent(mesa.Agent):
     """An agent that sims a roomba"""
@@ -12,66 +16,128 @@ class RoombaAgent(mesa.Agent):
         super().__init__(unique_id, model)
 
     def move(self):
+        check_curr_pos = self.model.grid.get_cell_list_contents([self.pos])
+
+        for agent in check_curr_pos:
+            if isinstance(agent, DirtAgent):
+                return True
+
         possible_steps = self.model.grid.get_neighborhood(
             self.pos, moore=True, include_center=False
         )
 
-        print(possible_steps)
-        break
+        #result = random.sample(possible_steps, k=len(possible_steps)) # shuffle the list
+        move_to = self.pos
 
-        new_position = self.random.choice(possible_steps)
-        self.model.grid.move_agent(self, new_position)
+        for steps in possible_steps:
+            dirt_found = False
+            searching = self.model.grid.get_cell_list_contents([steps])
 
-    # def clean(self):
+            if len(searching) > 0:
+
+                for agent in searching:
+                    if isinstance(agent, RoombaAgent): # if is instance of roomba
+                        dirt_found = False
+                        break
+                    elif isinstance(agent, DirtAgent):
+                        dirt_found = True
+                    else:
+                        move_to = steps
+            else:
+                continue
+
+            if dirt_found is True:
+                move_to = steps
+                self.model.grid.move_agent(self, move_to)
+                return True # did move
+            else:
+                continue # if normal found or roomba found continue
+
+        self.model.grid.move_agent(self, move_to)
+        return False # did not move at all
 
     def clean(self):
-        cellmates = self.model.grid.get_cell_list_contents([self.pos])
+        agents = self.model.grid.get_cell_list_contents([self.pos])
 
-        if len(cellmates) > 1:
-            print(cellmates)
-            # other = self.random.choice(cellmates)
-            # other.wealth += 1
-            # self.wealth -= 1
+        for agent in agents:
+            if isinstance(agent, DirtAgent):
+                self.model.kill_agents.append(agent)
 
     def step(self):
-        will_move = self.move() # check if agent can move
-        if (will_move):
-            self.clean()
+        if isinstance(self, RoombaAgent):
+            moving = self.move() # check if agent can move
+            if moving is True:
+                self.clean() # clean the dirty cell
 
 class CleaningModel(mesa.Model):
     """A model that creates the space and spawns the required agents"""
 
-    def __init__(self, num_of_roombas, dirt_percentage, room_width, room_height, max_num_batches):
+    def __init__(self, num_of_roombas, dirt_percentage, room_width, room_height, max_num_steps):
 
         # Before doing anything check data type of dirt_percentage
-        if ((!isinstance(dirt_percentage, int) and (0 <= dirt_percentage) ):
-            print("Error: not a percentage betw
-            break
+        if isinstance(dirt_percentage, int) is False:
+            print("Error: invalid value of percentage")
+            exit(1)
+
+        print("START OF THE PROGRAM")
 
         # Declare initial data of the model
         self.roombas = num_of_roombas
         self.dirt = dirt_percentage
-        self.batch = max_num_batches
-
-        self.grid = mesa.space.MultiGrid(room_width, room_height, True) # create the space of a width and height room_width, room_height
-
+        self.total_dirts = 0
+        self.curr_steps = 0
+        self.ids = 0
+        self.max_steps = max_num_steps
+        self.kill_agents = [] # agents to kill after each step
+        self.grid = mesa.space.MultiGrid(room_width, room_height, False) # create the space of a width and height room_width, room_height and no torodoidal
         self.schedule = mesa.time.RandomActivation(self) # scheduler for steps
-        self.running = True # running
+        self.running = True # running while this is true
 
         # Populate the grid with dirt agents
+        total_cells = room_width * room_height
+        # print(f"Total number of cells are {total_cells}")
+        i_val = round(total_cells * (self.dirt / 100))
+        self.total_dirts = i_val
+        # print(f"Dirt percentage is {self.dirt}")
+        # print(f"Number of cells to dirt will actually be {i_val}")
 
-        for i in range():
+        w_list = [i for i in range(self.grid.width)]
+        h_list = [i for i in range(self.grid.height)]
+
+        com_list = list(product(w_list, h_list))
+        result = random.sample(com_list, k=i_val)
 
 
-        # Create all the roomba agents
-        for i in range(self.roombas):
-            agent = RoombaAgent(i, self) # constructor RoombaAgent(id)
+        for i in range(i_val):
+            x, y = result[i]
+            agent = DirtAgent(i, self) # constructor DirtAgent(id)
             self.schedule.add(agent) # adds agent to scheduler
 
             # Add the agent to a random grid cell
-            x = self.random.randrange(self.grid.width)
-            y = self.random.randrange(self.grid.height)
             self.grid.place_agent(agent, (x, y))
+            self.ids += 1 # update the self.ids adding one
+
+        # print(f"A number of {self.ids} dirt agents have been added")
+        # print(f"A number of {i_val} been added")
+
+        roomba_list = [i for i in range(self.roombas)]
+
+        roomba_list = list(product(h_list, w_list))
+        result = random.sample(roomba_list, k=self.roombas)
+
+        # Create all the roomba agents
+        for i in range(self.roombas):
+            x, y = result[i]
+
+            agent = RoombaAgent(self.ids, self) # constructor RoombaAgent(id)
+            self.schedule.add(agent) # adds agent to scheduler
+
+            self.grid.place_agent(agent, (x, y))
+
+            self.ids += 1
+
+        # print(f"Roombas {self.roombas} agents have been added")
+        # print(f"Total number of agents is {self.ids}")
 
         # self.datacollector = mesa.DataCollector(
         #     model_reporters={"Gini": compute_gini}, agent_reporters={"Wealth": "wealth"}
@@ -79,4 +145,20 @@ class CleaningModel(mesa.Model):
 
     def step(self):
         #self.datacollector.collect(self)
-        self.schedule.step()
+
+        if self.curr_steps == self.max_steps:
+            print("Warning: maximum number of steps reached!!!")
+            self.running = False
+        elif self.total_dirts == 0:
+            print("No more to clean")
+            self.running = False
+        else:
+            self.schedule.step()
+            self.curr_steps += 1
+
+            while self.kill_agents != []:
+                for dirt_agent in self.kill_agents:
+                    self.grid.remove_agent(dirt_agent)
+                    self.schedule.remove(dirt_agent)
+                    self.kill_agents.remove(dirt_agent)
+                    self.total_dirts -= 1
