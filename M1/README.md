@@ -23,7 +23,7 @@ The steps to follow for the simulation are:
 - Program executes in established time
 
 ### Analyze the following:
-	Max time until all cells were cleaned (or max time)
-	Percentage of cleaned cells at the end of sim.
-	Number of movements made by all agents
-	How number of agents impacst cleaning time and number of movements
+- Max time until all cells were cleaned (or max time)
+- Percentage of cleaned cells at the end of sim.
+- Number of movements made by all agents
+- How number of agents impacst cleaning time and number of movements
