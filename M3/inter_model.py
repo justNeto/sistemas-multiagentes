@@ -218,6 +218,36 @@ class IntersectionModel(mesa.Model):
 
         # Spawning areas
 
+        # print("Spawn up")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (21,49))
+        # i += 1
+
+        # print("Spawn down")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (21,0))
+        # i += 1
+
+        # print("Spawn left down")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (0,24))
+        # i += 1
+
+        # print("Spawn left up")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (0,26))
+        # i += 1
+
+        # print("Spawn right down")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (49,24))
+        # i += 1
+
+        # print("Spawn right up")
+        # agent = TrafficLight(i, self)
+        # self.grid.place_agent(agent, (49,26))
+        # i += 1
+
         # self.datacollector = mesa.DataCollector(
         #         model_reporters={"Current_steps": get_current_model_steps},
         #         agent_reporters={}
