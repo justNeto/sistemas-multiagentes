@@ -79,55 +79,36 @@ class Car(mesa.Agent):
             # Where can the car move? Only in X and Y, not in diagonal
 
             # First look around and decide what to do if an ambulance is found
-            print("\n\n| -- Moving -- |\n")
 
             # Possible movements for an agent
             possible_steps = self.model.grid.get_neighborhood(
                 self.pos, moore=True, include_center=False
             )
 
-            print(possible_steps)
-
-            depurated_steps = []
-            print(len(depurated_steps))
+            min = 0
+            best = []
 
             for steps in possible_steps:
-                cannot_use_step = False
                 searching = self.model.grid.get_cell_list_contents([steps])
 
                 if len(searching) > 0:
-                    print(f":::--Agent found in {steps}")
-                    for agent in searching:
-                        if isinstance(agent, Car) or isinstance(agent, Ambulance) or isinstance(agent, Sidewalk):
-                            cannot_use_step = True
-                        else:
-                            print("Can use this step!")
-                            break
-                            # cannot move and exit
-
-                if cannot_use_step:
-                    continue
+                    pass
                 else:
-                    depurated_steps.append(steps)
+                    print(f"No agent found in {steps}")
+                    x, y = steps
+                    new_point = [x,y]
+                    aux = get_distance(new_point, destination)
 
-            if (len(depurated_steps) == 0):
-                return
+                    if (aux < min):
+                        best = new_point
+                        min = aux
+                    elif aux == min:
+                        self.model.kill_agents.append(self)
 
-            min = 1000
-            best = []
-
-            for opts in depurated_steps:
-                x, y = opts
-                new_point = [x,y]
-                aux = get_distance(new_point, self.destination)
-                if (aux < min):
-                    best = new_point
-                    min = aux
-                elif aux == min:
-                    self.model.kill_agents.append(self)
 
             print(f"The best distance possible is {min}")
-            self.model.grid.move_agent(self, tuple(e for e in best))
+            print(best)
+            self.model.grid.move_agent(self, move_to)
             # Change position to best
             #self.model.look(self.pos, "right")
 
@@ -180,8 +161,7 @@ class IntersectionModel(mesa.Model):
         print(self.grid)
 
     def __init__(self, max_cars_num, debug=False):
-        self.lol = max_cars_num
-        self.max_cars = 1
+        self.max_cars = max_cars_num
         self.debug = debug
         self.curr_cars = 0
 
@@ -315,22 +295,22 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         """ CREATING STATIC AGENTS FOR TESTING BEHAVIOR OR DEBUGGING"""
-        # ambulances = [
-        #             [22,48], # up
-        #             [22,46], # up
-        #             [20, 2], # down
-        #             [20, 4], # down
-        #             [2, 26], # left
-        #             [4, 26], # left
-        #             [48, 24], # right
-        #             [46, 24] # right
-        #         ]
+        ambulances = [
+                    [22,48], # up
+                    [22,46], # up
+                    [20, 2], # down
+                    [20, 4], # down
+                    [2, 26], # left
+                    [4, 26], # left
+                    [48, 24], # right
+                    [46, 24] # right
+                ]
 
-        # for location in ambulances:
-        #     x, y = location
-        #     agent = Ambulance(self.unique_ids, self)
-        #     self.grid.place_agent(agent, (x, y))
-        #     self.unique_ids += 1
+        for location in ambulances:
+            x, y = location
+            agent = Ambulance(self.unique_ids, self)
+            self.grid.place_agent(agent, (x, y))
+            self.unique_ids += 1
 
         # Create a spawn agent in each spawning area
         for location in self.spawn:
@@ -399,9 +379,8 @@ class IntersectionModel(mesa.Model):
                 #     print(f"    ::- Will go to {agent.destination}")
 
                 self.unique_ids += 1
-                self.curr_cars += 1
             elif spawn_prob < .20:
-                continue
+
                 x, y = location # extract the location
                 agent = Ambulance(self.unique_ids, self)
                 self.schedule.add(agent) # adds agent to scheduler
@@ -423,7 +402,6 @@ class IntersectionModel(mesa.Model):
                 #     print(f"    ::- Will go to {agent.destination}")
 
                 self.unique_ids += 1
-                self.curr_cars += 1
             else:
                 continue
 
