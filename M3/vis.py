@@ -1,5 +1,26 @@
+from mesa.visualization.modules import CanvasGrid
+from mesa.visualization.ModularVisualization import ModularServer
+from mesa.visualization.UserParam import UserSettableParameter
+
 from inter_model import *
-import mesa
+
+simulation_params = {
+        "max_cars_num":UserSettableParameter(
+                "slider",
+                "Numero de carros simultaneos",
+                20, # default
+                1, # min
+                50, # max
+                1, # step
+                description="Elija el numero de carros que debe de haber maximo en la simulacion"
+            ),
+        "debug":UserSettableParameter(
+                "checkbox",
+                "Debug",
+                True,
+                description="Elija si mostrar debug o no"
+            )
+}
 
 def agent_portrayal(agent):
     portrayal = {"Shape": "circle",
@@ -71,8 +92,7 @@ def agent_portrayal(agent):
 grid = mesa.visualization.CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 server = mesa.visualization.ModularServer(
-        IntersectionModel, [grid], "Intersection model", {"max_cars_num" : 20, "debug" : True}
-)
+        IntersectionModel, [grid], "Intersection model", simulation_params)
 
 server.port = 8521 # The default
 server.launch()
