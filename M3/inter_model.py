@@ -5,6 +5,7 @@ import math
 
 def move(agent, to_):
     # According to status will do some different things.
+    print("Will move!")
     if agent.status == 0:
 
         # Possible gments for an agent
@@ -23,10 +24,35 @@ def move(agent, to_):
                     if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                         cannot_use_step = True
                         break
+                    elif isinstance(stuff, TrafficLight):
+                        if agent.inside_int == True:
+                            break
+
+                        if stuff.status == 1:
+                            agent.velocity = 0
+                            return
+                        if stuff.status == 3:
+                            agent.velocity = agent.status + 1
+                        else:
+                            cannot_use_step = False
+                    else:
+                        print("Checking some stuff!")
+                        x_cur, y_cur = agent.pos
+                        curr_loc = [x_cur, y_cur]
+
+                        print(curr_loc)
+                        print(agent.model.intersection)
+
+                        for val in agent.model.intersection:
+                            if val == curr_loc:
+                                print("Inside intersection")
+                                agent.inside_int = True
+                                break
 
             if cannot_use_step:
                 continue
             else:
+                print(steps)
                 depurated_steps.append(steps)
 
         if (len(depurated_steps) == 0):
@@ -45,8 +71,8 @@ def move(agent, to_):
         agent.model.grid.move_agent(agent, tuple(e for e in best))
 
     if agent.status == 1:
+
         for i in range(agent.status):
-            # Possible gments for an agent
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
@@ -62,16 +88,41 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+                        elif isinstance(stuff, TrafficLight):
+                            if agent.inside_int == True:
+                                break
+
+                            if stuff.status == 1:
+                                agent.velocity = 0
+                                return
+                            if stuff.status == 3:
+                                agent.velocity = agent.status + 1
+                            else:
+                                cannot_use_step = False
+                        else:
+                            print("Checking some stuff!")
+                            x_cur, y_cur = agent.pos
+                            curr_loc = [x_cur, y_cur]
+
+                            print(curr_loc)
+                            print(agent.model.intersection)
+
+                            for val in agent.model.intersection:
+                                if val == curr_loc:
+                                    print("Inside intersection")
+                                    agent.inside_int = True
+                                    break
 
                 if cannot_use_step:
                     continue
                 else:
+                    print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
                 return
 
-            min = 150
+            min = 1000
             best = []
             for opts in depurated_steps:
                 x, y = opts
@@ -85,7 +136,7 @@ def move(agent, to_):
 
     if agent.status == 2:
         for i in range(agent.status):
-            # Possible gments for an agent
+
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
@@ -101,16 +152,41 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+                        elif isinstance(stuff, TrafficLight):
+                            if agent.inside_int == True:
+                                break
+
+                            if stuff.status == 1:
+                                agent.velocity = 0
+                                return
+                            if stuff.status == 3:
+                                agent.velocity = agent.status + 1
+                            else:
+                                cannot_use_step = False
+                        else:
+                            print("Checking some stuff!")
+                            x_cur, y_cur = agent.pos
+                            curr_loc = [x_cur, y_cur]
+
+                            print(curr_loc)
+                            print(agent.model.intersection)
+
+                            for val in agent.model.intersection:
+                                if val == curr_loc:
+                                    print("Inside intersection")
+                                    agent.inside_int = True
+                                    break
 
                 if cannot_use_step:
                     continue
                 else:
+                    print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
                 return
 
-            min = 150
+            min = 1000
             best = []
             for opts in depurated_steps:
                 x, y = opts
@@ -121,10 +197,11 @@ def move(agent, to_):
                     min = aux
 
             agent.model.grid.move_agent(agent, tuple(e for e in best))
+
 
     if agent.status == 3:
         for i in range(agent.status):
-            # Possible gments for an agent
+
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
@@ -140,16 +217,41 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+                        elif isinstance(stuff, TrafficLight):
+                            if agent.inside_int == True:
+                                break
+
+                            if stuff.status == 1:
+                                agent.velocity = 0
+                                return
+                            if stuff.status == 3:
+                                agent.velocity = agent.status + 1
+                            else:
+                                cannot_use_step = False
+                        else:
+                            print("Checking some stuff!")
+                            x_cur, y_cur = agent.pos
+                            curr_loc = [x_cur, y_cur]
+
+                            print(curr_loc)
+                            print(agent.model.intersection)
+
+                            for val in agent.model.intersection:
+                                if val == curr_loc:
+                                    print("Inside intersection")
+                                    agent.inside_int = True
+                                    break
 
                 if cannot_use_step:
                     continue
                 else:
+                    print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
                 return
 
-            min = 150
+            min = 1000
             best = []
             for opts in depurated_steps:
                 x, y = opts
@@ -160,10 +262,6 @@ def move(agent, to_):
                     min = aux
 
             agent.model.grid.move_agent(agent, tuple(e for e in best))
-            # if self.model.debug is True:
-            #     print(f"After spawning, current position is {self.pos}")
-            #     print(f"Destination is {self.destination}")
-            #     print("Normal")
 
 # Some useful methods that are not dependent of an agent
 def get_distance(p, q):
@@ -211,7 +309,7 @@ class Sensor(mesa.Agent):
         self.direction = direction
         self.checking = 0
 
-        # Check if there is traffic on each road
+        # g if there is traffic on each road
         #   If inside a certain range from the sensors there is already traffic, then given the cars number assign priority
         #       continue the algorithm
         #   Else
@@ -220,7 +318,7 @@ class Sensor(mesa.Agent):
 
         # Wait some time (a.k.a) wait some arbitrary number of steps
         #   After time is over
-        #       Check if there are still cars in the intersection
+        #       g if there are still cars in the intersection
         #       Set all the traffic lights red
         #       Wait until intersection is freed
         #       Continue
@@ -248,6 +346,8 @@ class Ambulance(mesa.Agent):
         self.final_des = []
         self.curr_des = []
 
+        self.inside_int = False
+
     def step(self):
         move(self, self.curr_des)
 
@@ -274,6 +374,8 @@ class Car(mesa.Agent):
         self.final_des = []
         self.curr_des = []
 
+        self.inside_int = False
+
     def step(self):
         move(self, self.curr_des)
 
@@ -284,7 +386,7 @@ class Car(mesa.Agent):
             else:
                 self.curr_des = self.final_des
 
-        # Check for the sorrounding areas
+        # g for the sorrounding areas
         #   These are current agent status dependent:
         #   if found an ambulance then "go to the nearest wall" -> for this the car will have to check its sorroundings and find the nearest Sidewalk agent
         #       if ambulanced found and not near a wall then go to wall
@@ -341,7 +443,7 @@ class IntersectionModel(mesa.Model):
 
         # Paint the traffic lights
         tl_one_x = [18]
-        tl_one_y = [23,24,25]
+        tl_one_y = [23, 24, 25, 26, 27]
 
         for x in tl_one_x:
             for y in tl_one_y:
@@ -362,7 +464,7 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         tl_two_x = [24]
-        tl_two_y = [25,26,27]
+        tl_two_y = [23, 24, 25, 26, 27]
 
         for x in tl_two_x:
             for y in tl_two_y:
@@ -382,7 +484,7 @@ class IntersectionModel(mesa.Model):
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        tl_three_x = [21, 22, 23]
+        tl_three_x = [19, 20, 21, 22, 23]
         tl_three_y = [22]
 
         for x in tl_three_x:
@@ -403,7 +505,7 @@ class IntersectionModel(mesa.Model):
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        tl_four_x = [19, 20, 21]
+        tl_four_x = [19, 20, 21, 22, 23]
         tl_four_y = [28]
 
         for x in tl_four_x:
@@ -439,10 +541,10 @@ class IntersectionModel(mesa.Model):
                     [49, 26] # right
                 ]
 
-        # self.intersection = [
-        #         [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
-        #         [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
-        #         [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
+        self.intersection = [
+                [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
+                [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
+                [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
 
         # Create a spawn agent in each spawning area
         for location in self.spawn:
@@ -806,11 +908,11 @@ class IntersectionModel(mesa.Model):
             # TODO: add that all agents have to stop if light is red
 
         if self.cycle is True:
-            if self.vel_time == 30:
+            if self.vel_time == 60:
                 self.priority = self.get_tf_reads()
                 self.change_tl(self.priority)
 
-                if self.tf_time == 20:
+                if self.tf_time == 60:
                     self.cycle = False
                     self.vel_time = 0
                     self.tf_time = 0
