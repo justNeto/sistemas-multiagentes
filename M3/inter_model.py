@@ -181,7 +181,7 @@ def set_name(x, y):
     return name_dict[x][y]
 
 def set_middle(origin, destiny):
-    print(f"Origin is {origin} and destiny is {destiny}")
+    # print(f"Origin is {origin} and destiny is {destiny}")
     location_dict = {
             "sp-left" :  { "dsp-up" : [20, 26], "dsp-down" : [22, 26], "dsp-right" : [22, 26]},
             "sp-right" : { "dsp-up" : [20, 24], "dsp-down" : [22, 24], "dsp-left" : [20, 24]},
@@ -315,6 +315,11 @@ class IntersectionModel(mesa.Model):
         self.s_down = []
         self.s_up = []
 
+        self.tl_left = []
+        self.tl_right = []
+        self.tl_down = []
+        self.tl_up = []
+
         self.priority = []
         self.vel_time = 0
         self.tf_time = 0
@@ -343,6 +348,7 @@ class IntersectionModel(mesa.Model):
                 agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
                 #self.schedule.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
+                self.tl_left.append(agent)
                 self.unique_ids += 1
 
         sensor_one_x = [18]
@@ -356,12 +362,13 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         tl_two_x = [24]
-        tl_two_y = [26,27,28]
+        tl_two_y = [25,26,27]
 
         for x in tl_two_x:
             for y in tl_two_y:
                 agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
                 # self.schedule.add(agent) # adds agent to scheduler
+                self.tl_right.append(agent)
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -382,6 +389,7 @@ class IntersectionModel(mesa.Model):
             for y in tl_three_y:
                 agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
                 # self.schedule.add(agent) # adds agent to scheduler
+                self.tl_down.append(agent)
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -403,6 +411,7 @@ class IntersectionModel(mesa.Model):
                 agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
                 # self.schedule.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
+                self.tl_up.append(agent)
                 self.unique_ids += 1
 
         sensor_four_x = [i for i in range(19, 24)]
@@ -430,10 +439,10 @@ class IntersectionModel(mesa.Model):
                     [49, 26] # right
                 ]
 
-        self.intersection = [
-                [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
-                [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
-                [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
+        # self.intersection = [
+        #         [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
+        #         [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
+        #         [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
 
         # Create a spawn agent in each spawning area
         for location in self.spawn:
@@ -451,7 +460,59 @@ class IntersectionModel(mesa.Model):
 
     """ STEP FOR SENSOR """
     def change_tl(self, prio_arr):
-        print(prio_arr)
+        for conditions in prio_arr:
+            if (conditions == "up"):
+                for lights in self.tl_up:
+                    lights.status = 3
+
+                for lights in self.tl_down:
+                    lights.status = 1
+
+                for lights in self.tl_left:
+                    lights.status = 1
+
+                for lights in self.tl_right:
+                    lights.status = 1
+
+            elif (conditions == "down"):
+                for lights in self.tl_down:
+                    lights.status = 3
+
+                for lights in self.tl_up:
+                    lights.status = 1
+
+                for lights in self.tl_right:
+                    lights.status = 1
+
+                for lights in self.tl_left:
+                    lights.status = 1
+
+            elif (conditions == "left"):
+
+                for lights in self.tl_left:
+                    lights.status = 3
+
+                for lights in self.tl_down:
+                    lights.status = 1
+
+                for lights in self.tl_up:
+                    lights.status = 1
+
+                for lights in self.tl_right:
+                    lights.status = 1
+
+            else:
+                for lights in self.tl_left:
+                    lights.status = 3
+
+                for lights in self.tl_down:
+                    lights.status = 1
+
+                for lights in self.tl_up:
+                    lights.status = 1
+
+                for lights in self.tl_right:
+                    lights.status = 3
 
     """ STEP FOR SENSOR """
     def get_vel_reads(self):
@@ -461,7 +522,7 @@ class IntersectionModel(mesa.Model):
 
         for one in self.s_up:
             res_up = list()
-            print(f"Up: searching with sensor in position {one.pos}")
+            # print(f"Up: searching with sensor in position {one.pos}")
 
             for i in range(7, 18):
                 aux = (one.pos[0], one.pos[1] + i)
@@ -481,7 +542,7 @@ class IntersectionModel(mesa.Model):
 
         for two in self.s_down:
             res_down = list()
-            print(f"Down: searching with sensor in position {two.pos}")
+            # print(f"Down: searching with sensor in position {two.pos}")
 
             for i in range(5, 18):
                 aux = (two.pos[0], two.pos[1] - i)
@@ -501,7 +562,7 @@ class IntersectionModel(mesa.Model):
 
         for three in self.s_left:
             res_left = list()
-            print(f"Left: {three}")
+            # print(f"Left: {three}")
 
             for i in range(5, 18):
                 aux = (three.pos[0] - i, three.pos[1])
@@ -521,7 +582,7 @@ class IntersectionModel(mesa.Model):
 
         for four in self.s_right:
             res_right = list()
-            print(f"Right: {four}")
+            # print(f"Right: {four}")
 
             for i in range(5, 18):
                 aux = (four.pos[0] + i, four.pos[1])
@@ -536,7 +597,7 @@ class IntersectionModel(mesa.Model):
         if (count != 0):
             decide["right"] = vel/count
 
-        print(decide)
+        print(f"The priority list will be {decide}")
         return sorted(decide, key=decide.get, reverse=True)
 
     """ STEP FOR SENSOR """
@@ -546,7 +607,7 @@ class IntersectionModel(mesa.Model):
 
         for one in self.s_up:
             res_up = list()
-            print(f"Up: searching with sensor in position {one.pos}")
+            # print(f"Up: searching with sensor in position {one.pos}")
 
             for i in range(1, 5):
                 aux = (one.pos[0], one.pos[1] + i)
@@ -564,7 +625,7 @@ class IntersectionModel(mesa.Model):
 
         for two in self.s_down:
             res_down = list()
-            print(f"Down: searching with sensor in position {two.pos}")
+            # print(f"Down: searching with sensor in position {two.pos}")
 
             for i in range(1, 5):
                 aux = (two.pos[0], two.pos[1] - i)
@@ -582,7 +643,7 @@ class IntersectionModel(mesa.Model):
 
         for three in self.s_left:
             res_left = list()
-            print(f"Left: {three}")
+            # print(f"Left: {three}")
 
             for i in range(1, 5):
                 aux = (three.pos[0] - i, three.pos[1])
@@ -600,7 +661,7 @@ class IntersectionModel(mesa.Model):
 
         for four in self.s_right:
             res_right = list()
-            print(f"Right: {four}")
+            # print(f"Right: {four}")
 
             for i in range(1, 5):
                 aux = (four.pos[0] + i, four.pos[1])
@@ -682,6 +743,19 @@ class IntersectionModel(mesa.Model):
                 agent.origin = set_name(x, y)
 
                 status_prob = round(random.uniform(0, 1), 2)
+                status_debug = ""
+
+                if .80 < status_prob <= .98:
+                    if self.debug is True:
+                        status_debug = "[ pressured ]"
+                    agent.status = 1
+                elif status_prob > .98:
+                    if self.debug is True:
+                        status_debug = "[ desesperated ]"
+                    agent.status = 2
+                else:
+                    if self.debug is True:
+                        status_debug = "[ normal ]"
 
                 # Set cars' destination
                 copy_of_dispawn = self.dispawn
@@ -690,28 +764,26 @@ class IntersectionModel(mesa.Model):
                 for destination in copy_of_dispawn:
                     if (get_distance(location, destination) <= 2):
                         continue
+                    else:
                         agent.final_des = destination
-                        x_i, y_i = destination
-                        agent.destiny = set_name(x_i, y_i)
+                        x_end, y_end = destination
+                        agent.destiny = set_name(x_end, y_end)
                         break
 
-                # if self.debug is True:
-                #     print(f" [[ Ambulance ]] spawned at ({x}. {y})")
-                #     print(f"    ::- Will go to {agent.final_des}")
-
                 agent.curr_des = set_middle(agent.origin, agent.destiny)
+
+                move(agent, agent.curr_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
-                move(agent, agent.curr_des)
             else:
                 continue
 
 
     def step(self):
 
-        if self.debug is True:
-            print(f"The max number of cars is {self.max_cars}")
-            print(f"The current number of cars is {self.curr_cars}")
+        # if self.debug is True:
+        #     print(f"The max number of cars is {self.max_cars}")
+        #     print(f"The current number of cars is {self.curr_cars}")
 
         if self.curr_cars < self.max_cars:
             self.spawnVehicles()
@@ -720,12 +792,12 @@ class IntersectionModel(mesa.Model):
 
         # LIFECYCLE
         if self.cycle is False:
-            print("Cycle is false")
+            # print("Cycle is false")
             self.priority = self.get_vel_reads()
             self.change_tl(self.priority)
 
             if self.priority == []:
-                print("Priority not found yet")
+                # print("Priority not found yet")
                 return
             else:
                 self.vel_time += 1
@@ -734,12 +806,11 @@ class IntersectionModel(mesa.Model):
             # TODO: add that all agents have to stop if light is red
 
         if self.cycle is True:
-            print("Cycle is true")
             if self.vel_time == 30:
                 self.priority = self.get_tf_reads()
                 self.change_tl(self.priority)
 
-                if self.tf_time == 10:
+                if self.tf_time == 20:
                     self.cycle = False
                     self.vel_time = 0
                     self.tf_time = 0
