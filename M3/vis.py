@@ -8,7 +8,7 @@ simulation_params = {
         "max_cars_num":UserSettableParameter(
                 "slider",
                 "Numero de carros simultaneos",
-                20, # default
+                1, # default
                 1, # min
                 50, # max
                 1, # step

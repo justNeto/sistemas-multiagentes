@@ -3,14 +3,178 @@ import numpy as np
 import random
 import math
 
+def move(agent, to_):
+    # According to status will do some different things.
+    if agent.status == 0:
+
+        # Possible gments for an agent
+        possible_steps = agent.model.grid.get_neighborhood(
+            agent.pos, moore=False, include_center=False
+        )
+
+        depurated_steps = []
+
+        for steps in possible_steps:
+            cannot_use_step = False
+            searching = agent.model.grid.get_cell_list_contents([steps])
+
+            if len(searching) > 0:
+                print(searching)
+                for stuff in searching:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
+                        cannot_use_step = True
+                        break
+
+            if cannot_use_step:
+                continue
+            else:
+                depurated_steps.append(steps)
+
+        if (len(depurated_steps) == 0):
+            return
+
+        min = 1000
+        best = []
+        for opts in depurated_steps:
+            x, y = opts
+            new_point = [x,y]
+            aux = get_distance(new_point, to_)
+            if (aux < min):
+                best = new_point
+                min = aux
+
+        agent.model.grid.move_agent(agent, tuple(e for e in best))
+
+    if agent.status == 1:
+        for i in range(agent.status):
+            # Possible gments for an agent
+            possible_steps = agent.model.grid.get_neighborhood(
+                agent.pos, moore=False, include_center=False
+            )
+
+            depurated_steps = []
+
+            for steps in possible_steps:
+                cannot_use_step = False
+                searching = agent.model.grid.get_cell_list_contents([steps])
+
+                if len(searching) > 0:
+                    print(searching)
+                    for stuff in searching:
+                        if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
+                            cannot_use_step = True
+                            break
+
+                if cannot_use_step:
+                    continue
+                else:
+                    depurated_steps.append(steps)
+
+            if (len(depurated_steps) == 0):
+                return
+
+            min = 150
+            best = []
+            for opts in depurated_steps:
+                x, y = opts
+                new_point = [x,y]
+                aux = get_distance(new_point, to_)
+                if (aux < min):
+                    best = new_point
+                    min = aux
+
+            agent.model.grid.move_agent(agent, tuple(e for e in best))
+
+    if agent.status == 2:
+        for i in range(agent.status):
+            # Possible gments for an agent
+            possible_steps = agent.model.grid.get_neighborhood(
+                agent.pos, moore=False, include_center=False
+            )
+
+            depurated_steps = []
+
+            for steps in possible_steps:
+                cannot_use_step = False
+                searching = agent.model.grid.get_cell_list_contents([steps])
+
+                if len(searching) > 0:
+                    print(searching)
+                    for stuff in searching:
+                        if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
+                            cannot_use_step = True
+                            break
+
+                if cannot_use_step:
+                    continue
+                else:
+                    depurated_steps.append(steps)
+
+            if (len(depurated_steps) == 0):
+                return
+
+            min = 150
+            best = []
+            for opts in depurated_steps:
+                x, y = opts
+                new_point = [x,y]
+                aux = get_distance(new_point, to_)
+                if (aux < min):
+                    best = new_point
+                    min = aux
+
+            agent.model.grid.move_agent(agent, tuple(e for e in best))
+
+    if agent.status == 3:
+        for i in range(agent.status):
+            # Possible gments for an agent
+            possible_steps = agent.model.grid.get_neighborhood(
+                agent.pos, moore=False, include_center=False
+            )
+
+            depurated_steps = []
+
+            for steps in possible_steps:
+                cannot_use_step = False
+                searching = agent.model.grid.get_cell_list_contents([steps])
+
+                if len(searching) > 0:
+                    print(searching)
+                    for stuff in searching:
+                        if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
+                            cannot_use_step = True
+                            break
+
+                if cannot_use_step:
+                    continue
+                else:
+                    depurated_steps.append(steps)
+
+            if (len(depurated_steps) == 0):
+                return
+
+            min = 150
+            best = []
+            for opts in depurated_steps:
+                x, y = opts
+                new_point = [x,y]
+                aux = get_distance(new_point, to_)
+                if (aux < min):
+                    best = new_point
+                    min = aux
+
+            agent.model.grid.move_agent(agent, tuple(e for e in best))
+            # if self.model.debug is True:
+            #     print(f"After spawning, current position is {self.pos}")
+            #     print(f"Destination is {self.destination}")
+            #     print("Normal")
+
 # Some useful methods that are not dependent of an agent
 def get_distance(p, q):
     """ Returns euclidean distance from A to B"""
     return math.sqrt((q[1] - p[1])**2 + (q[0] - p[0])**2)
 
 def set_name(x, y):
-    print(x)
-    print(y)
     name_dict = {
             0:  { 26 : "sp-left", 24 : "dsp-left" },
             20: { 0 : "sp-down", 49 : "dsp-up" },
@@ -18,22 +182,17 @@ def set_name(x, y):
             49: { 24 : "sp-right", 26 : "dsp-right" }
         }
 
-    print(name_dict[x])
+    return name_dict[x][y]
 
-    """ Returns euclidean distance from A to B"""
-        # self.medium = [ # medium destination
-        #                 # down,    left,    right
-        #                 [[20, 26], [20, 26], [20, 24] ], # -> dispawn up
-        #                 # up,      left,     right
-        #                 [[22, 24], [22, 26], [22, 24] ], # -> dispawn down
-        #                 # down,    up,     right
-        #                 [[20, 24], [22, 24], [20, 24] ], # -> dispawn left
-        #                 # down,    up,     left
-        #                 [[20, 26], [22, 26], [22, 26] ]  # -> dispawn right
-        #         ]
+def set_middle(origin, destiny):
+    location_dict = {
+            "sp-left" :  { "dsp-up" : [20, 26], "dsp-down" : [22, 26], "dsp-right" : [22, 26]},
+            "sp-right" : { "dsp-up" : [20, 24], "dsp-down" : [22, 24], "dsp-left" : [20, 24]},
+            "sp-down" : { "dsp-up" : [20, 26], "dsp-left" : [20, 24], "dsp-right" : [20, 26]},
+            "sp-up" : { "dsp-down" : [22, 24], "dsp-left" : [22, 24], "dsp-right" : [22, 26]}
+    }
 
-
-    # return name
+    return location_dict[origin][destiny]
 
 class Sidewalk(mesa.Agent):
     """An agent that sims the sidewalk of the street"""
@@ -41,14 +200,6 @@ class Sidewalk(mesa.Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-class Ambulance(mesa.Agent):
-    """An ambulance agent"""
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
-        self.status = 0
-
-    def step(self):
-        pass
 
 class DebugAgents(mesa.Agent):
     """A class for debugging spawning points"""
@@ -89,6 +240,33 @@ class TrafficLight(mesa.Agent):
         self.status = 0
 
 
+class Ambulance(mesa.Agent):
+    """An ambulance agent"""
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
+        self.status = 3 # 0 is normal, 1 is pressured, 2 is desesperated, 3 is ambulance
+        self.velocity = 4 # it will travel only a meter at the time
+
+        # Reference location with name
+        self.origin = ""
+        self.destiny = ""
+        self.final_des = []
+        self.curr_des = []
+
+    def step(self):
+        move(self, self.curr_des)
+
+        des_x, des_y = self.pos
+        print(f"After moving the position is {self.pos}")
+        curr_pos = [des_x, des_y]
+
+        if self.pos[0] == self.curr_des[0] and self.pos[1] == self.curr_des[1]:
+            if ((self.curr_des[0] == self.final_des[0]) and (self.curr_des[1] == self.final_des[1])):
+                self.model.kill_agents.append(self)
+                return
+            else:
+                self.curr_des = self.final_des
+
 class Car(mesa.Agent):
     """An agent that sims a roomba"""
     def __init__(self, unique_id, model):
@@ -99,194 +277,49 @@ class Car(mesa.Agent):
         # Reference location with name
         self.origin = ""
         self.destiny = ""
-
-        self.destination = []
-
-
-    def move(self, status, from_, to_):
-        pass
+        self.final_des = []
+        self.curr_des = []
 
     def step(self):
-        pass
-        # des_x, des_y = self.pos
-        # curr_pos = [des_x, des_y]
+        move(self, self.curr_des)
 
-        # # If not reached medium pos then set
-        # # if (self.destination[0] == curr_pos[0]) and (self.destination[1] == curr_pos[1]):
-        # #     self.model.kill_agents.append(self)
-        # #     return
-        # # elif:
-        # #     if (self.destination[0] == des_arr[0]) and (self.destination[1] == des_arr[1]):
-        # #         self.model.kill_agents.append(self)
-        # #         return
+        if self.pos[0] == self.curr_des[0] and self.pos[1] == self.curr_des[1]:
+            print("Madre mia")
 
-        # move(self.status, curr_pos, curr_des)
+            if ((self.curr_des[0] == self.final_des[0]) and (self.curr_des[1] == self.final_des[1])):
+                self.model.kill_agents.append(self)
+                return
+            else:
+                self.curr_des = self.final_des
 
-        # # According to status will do some different things.
-        # if self.status == 0:
-        #     self.velocity = 1
-        #     # Decide where to move that the car to get closer to the destination
-        #     # Where can the car move? Only in X and Y, not in diagonal
 
-        #     # First look around and decide what to do if an ambulance is found
-        #     # print("\n\n| -- Moving -- |\n")
-
-        #     # Possible movements for an agent
-        #     possible_steps = self.model.grid.get_neighborhood(
-        #         self.pos, moore=False, include_center=False
-        #     )
-
-        #     depurated_steps = []
-
-        #     for steps in possible_steps:
-        #         cannot_use_step = False
-        #         searching = self.model.grid.get_cell_list_contents([steps])
-
-        #         if len(searching) > 0:
-        #             # print(f":::--Agent found in {steps}")
-        #             for agent in searching:
-        #                 if isinstance(agent, Car) or isinstance(agent, Ambulance) or isinstance(agent, Sidewalk):
-        #                     cannot_use_step = True
-        #                 else:
-        #                     # print("Can use this step!")
-        #                     break
-        #                     # cannot move and exit
-
-        #         if cannot_use_step:
-        #             continue
-        #         else:
-        #             depurated_steps.append(steps)
-
-        #     if (len(depurated_steps) == 0):
-        #         return
-
-        #     min = 1000
-        #     best = []
-
-        #     for opts in depurated_steps:
-        #         x, y = opts
-        #         new_point = [x,y]
-        #         aux = get_distance(new_point, curr_des)
-        #         if (aux < min):
-        #             best = new_point
-        #             min = aux
-
-        #     # print(f"The best distance possible is {min}")
-        #     self.model.grid.move_agent(self, tuple(e for e in best))
-
-        #     # if self.model.debug is True:
-        #     #     print(f"After spawning, current position is {self.pos}")
-        #     #     print(f"Destination is {self.destination}")
-        #     #     print("Normal")
-        #     # pass
-
-        # elif self.status == 1:
-        #     self.velocity = 2
-
-        #     # First look around and decide what to do if an ambulance is found
-        #     # print("\n\n| -- Moving -- |\n")
-
-        #     # Possible movements for an agent
-        #     possible_steps = self.model.grid.get_neighborhood(
-        #         self.pos, moore=False, include_center=False
-        #     )
-
-        #     # print(possible_steps)
-
-        #     depurated_steps = []
-
-        #     for steps in possible_steps:
-        #         cannot_use_step = False
-        #         searching = self.model.grid.get_cell_list_contents([steps])
-
-        #         if len(searching) > 0:
-        #             # print(f":::--Agent found in {steps}")
-        #             for agent in searching:
-        #                 if isinstance(agent, Car) or isinstance(agent, Ambulance) or isinstance(agent, Sidewalk):
-        #                     cannot_use_step = True
-        #                 else:
-        #                     break
-        #                     # cannot move and exit
-
-        #         if cannot_use_step:
-        #             continue
-        #         else:
-        #             depurated_steps.append(steps)
-
-        #     if (len(depurated_steps) == 0):
-        #         return
-
-        #     min = 1000
-        #     best = []
-
-        #     for opts in depurated_steps:
-        #         x, y = opts
-        #         new_point = [x,y]
-        #         aux = get_distance(new_point, curr_des)
-        #         if (aux < min):
-        #             best = new_point
-        #             min = aux
-
-        #     # print(f"The best distance possible is {min}")
-        #     self.model.grid.move_agent(self, tuple(e for e in best))
-
-        #     # if self.model.debug is True:
-        #     #     print(f"After spawning, current position is {self.pos}")
-        #     #     print(f"Destination is {self.destination}")
-        #     #     print("Pressured")
-        #     # pass
-
+        # if (self.curr_des[0] != self.final_des[0] and self.curr_des[1] != self.final_des[1]):
+        #     # Going to middle
+        #     g(self, self.curr_des)
         # else:
-        #     self.velocity = 2
+        #     if (curr_pos[0] == self.curr_des[0] and curr_pos[1] == self.final_des[1]):
+        #         print("Agent has reached middle position!")
+        #         self.curr_des[0] = self.final_des[0]
+        #         self.curr_des[1] = self.final_des[1]
 
-        #     # Possible movements for an agent
-        #     possible_steps = self.model.grid.get_neighborhood(
-        #         self.pos, moore=False, include_center=False
-        #     )
+        #     if (curr_pos[0] == self.curr_des[0] and curr_pos[1] == self.final_des[1]):
+        #         self.model.kill_agents.append(self)
+        #         return
+        #     else:
+        #         g(self, self.curr_des)
 
-        #     # print(possible_steps)
+        # Do other something
 
-        #     depurated_steps = []
-
-        #     for steps in possible_steps:
-        #         cannot_use_step = False
-        #         searching = self.model.grid.get_cell_list_contents([steps])
-
-        #         if len(searching) > 0:
-        #             # print(f":::--Agent found in {steps}")
-        #             for agent in searching:
-        #                 if isinstance(agent, Car) or isinstance(agent, Ambulance) or isinstance(agent, Sidewalk):
-        #                     cannot_use_step = True
-        #                 else:
-        #                     break
-        #                     # cannot move and exit
-
-        #         if cannot_use_step:
-        #             continue
-        #         else:
-        #             depurated_steps.append(steps)
-
-        #     if (len(depurated_steps) == 0):
+        # if (curr_pos[0] == self.curr_des[0]) and (curr_pos[1] == self.curr_dest[1]):
+        #     self.model.kill_agents.append(self)
+        #     return
+        # else:
+        #     if (self.destination[0] == des_arr[0]) and (self.destination[1] == des_arr[1]):
+        #         self.model.kill_agents.append(self)
         #         return
 
-        #     min = 1000
-        #     best = []
-
-        #     for opts in depurated_steps:
-        #         x, y = opts
-        #         new_point = [x,y]
-        #         aux = get_distance(new_point, curr_des)
-        #         if (aux < min):
-        #             best = new_point
-        #             min = aux
-
-            # self.model.grid.move_agent(self, tuple(e for e in best))
-
-            # # if self.model.debug is True:
-            # #     print(f"After spawning, current position is {self.pos}")
-            # #     print(f"Destination is {self.destination}")
-            # #     print("Normal")
-            # # pass
+        # pass agent  model     positiona  destination
+        # g(self, self.model, curr_pos, curr_des)
 
         # Check for the sorrounding areas
         #   These are current agent status dependent:
@@ -295,7 +328,7 @@ class Car(mesa.Agent):
         #       but if ambulance found then just continue going
         #       continue
         #   else check for traffic light ahead
-        #       if traffic light is red then velocity will turn 0 and will not move
+        #       if traffic light is red then velocity will turn 0 and will not g
         #       if traffic light yellow reduce and in range of sensors (by 5) reduce speed by one
         #       if traffic light green continue
 
@@ -339,7 +372,7 @@ class IntersectionModel(mesa.Model):
         for x in tl_one_x:
             for y in tl_one_y:
                 agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
-                self.schedule.add(agent) # adds agent to scheduler
+                #self.schedule.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -437,7 +470,6 @@ class IntersectionModel(mesa.Model):
                 [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
                 [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
 
-
         # ambulances = [
         #             [22,48], # up
         #             [22,46], # up
@@ -500,18 +532,19 @@ class IntersectionModel(mesa.Model):
         #         agent_reporters={}
         # )
 
-
+    # SPAWN VEHICLES
     def spawnVehicles(self):
-
         for location in self.spawn:
-            if self.curr_cars >= self.max_cars:
+
+            if self.curr_cars == self.max_cars:
                 return
 
             spawn_prob = round(random.uniform(0, 1), 2)
 
             if spawn_prob > .30:
                 x, y = location # extract the location
-                agent = Car(self.unique_ids, self)
+                agent = Car(self.unique_ids, self) # creates agent
+
                 self.schedule.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 agent.origin = set_name(x, y)
@@ -539,63 +572,69 @@ class IntersectionModel(mesa.Model):
                     if (get_distance(location, destination) <= 2):
                         continue
                     else:
-                        agent.destination = destination
-                        x, y = destination
-                        agent.destiny = set_name(x, y)
+                        agent.final_des = destination
+                        x_end, y_end = destination
+                        agent.destiny = set_name(x_end, y_end)
                         break
 
                 if self.debug is True:
                     print(f" [[ Car ]] spawned at ({x}. {y}) with status of {status_debug}")
-                    print(f"    ::- Will go to {agent.destination}")
+                    print(f"    ::- Will go to {agent.final_des}")
 
+                # At spawn set self.curr_des to the middle point
+                agent.curr_des = set_middle(agent.origin, agent.destiny)
+
+                move(agent, agent.curr_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
 
-            # elif spawn_prob < .20:
-            #     x, y = location # extract the location
-            #     agent = Ambulance(self.unique_ids, self)
-            #     self.schedule.add(agent) # adds agent to scheduler
-            #     self.grid.place_agent(agent, (x, y))
+            elif spawn_prob < .20:
+                x, y = location # extract the location
+                agent = Ambulance(self.unique_ids, self) # creates agent
 
-            #     # Set cars' destination
-            #     copy_of_dispawn = self.dispawn
-            #     random.shuffle(copy_of_dispawn)
+                self.schedule.add(agent) # adds agent to scheduler
+                self.grid.place_agent(agent, (x, y))
+                agent.origin = set_name(x, y)
 
-            #     for destination in copy_of_dispawn:
-            #         if (get_distance(location, destination) <= 2):
-            #             continue
-            #         else:
-            #             agent.destination = destination
-            #             break
+                status_prob = round(random.uniform(0, 1), 2)
 
-            #     if self.debug is True:
-            #         print(f" [[ Ambulance ]] spawned at ({x}. {y})")
-            #         print(f"    ::- Will go to {agent.destination}")
+                # Set cars' destination
+                copy_of_dispawn = self.dispawn
+                random.shuffle(copy_of_dispawn)
 
-            #     self.unique_ids += 1
-            #     self.curr_cars += 1
+                for destination in copy_of_dispawn:
+                    if (get_distance(location, destination) <= 2):
+                        continue
+                    else:
+                        agent.final_des = destination
+                        x_i, y_i = destination
+                        agent.destiny = set_name(x_i, y_i)
+                        break
+
+                if self.debug is True:
+                    print(f" [[ Ambulance ]] spawned at ({x}. {y})")
+                    print(f"    ::- Will go to {agent.final_des}")
+
+                agent.curr_des = set_middle(agent.origin, agent.destiny)
+                self.unique_ids += 1
+                self.curr_cars += 1
+                move(agent, agent.curr_des)
             else:
                 continue
 
+
     def step(self):
-        print(f"The max number of cars is {self.max_cars}")
-        print(f"The current number of cars is {self.curr_cars}")
+        if self.debug is True:
+            print(f"The max number of cars is {self.max_cars}")
+            print(f"The current number of cars is {self.curr_cars}")
 
-        if self.curr_cars == self.max_cars:
-            print("|||||||||||||||||||||||||Do not spawn more cars and just step||||||||||||||||")
-            self.schedule.step() # continue the simulation
-        else:
-            # Spawn cars if cars can be spawned
-            # Check spawning positions in grid if empty
-
+        if self.curr_cars < self.max_cars:
             self.spawnVehicles()
-            self.schedule.step()
 
+        self.schedule.step()
 
-        while self.kill_agents != []:
-            for agent in self.kill_agents:
-                print(agent.unique_id)
-                self.grid.remove_agent(agent)
-                self.schedule.remove(agent)
-                self.kill_agents.remove(agent)
+        for to_kill in self.kill_agents:
+                self.grid.remove_agent(to_kill)
+                self.schedule.remove(to_kill)
+                self.kill_agents.remove(to_kill)
                 self.curr_cars -= 1
