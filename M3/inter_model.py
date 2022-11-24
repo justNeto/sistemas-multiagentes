@@ -5,6 +5,8 @@ import math
 
 
 def move(agent, to_):
+    print("WILL MOVE!")
+
     # According to status will do some different things.
     if agent.status == 0:
 
@@ -24,6 +26,7 @@ def move(agent, to_):
                     if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                         cannot_use_step = True
                         break
+
                     elif isinstance(stuff, TrafficLight):
                         if agent.inside_int == True:
                             break
@@ -39,14 +42,16 @@ def move(agent, to_):
                         x_cur, y_cur = agent.pos
                         curr_loc = [x_cur, y_cur]
 
-                        # print(curr_loc)
-                        # print(agent.model.intersection)
+                        print(f"This agent current location is {curr_loc}")
+                        print(f"The model's intersection is {agent.model.intersection}")
 
                         for val in agent.model.intersection:
                             if val == curr_loc:
-                                # print("Inside intersection")
+                                print("Inside intersection")
                                 agent.inside_int = True
                                 break
+                        print("Not in intersection!")
+                        print(f"Currents agent street is given by {agent.curr_street} and {agent.curr_side}")
 
             if cannot_use_step:
                 continue
@@ -276,7 +281,6 @@ class Sidewalk(mesa.Agent):
 
 
 class DebugAgents(mesa.Agent):
-    """A class for debugging spawning points"""
     def __init__(self, unique_id, status, model):
         super().__init__(unique_id, model)
         self.status = status
@@ -285,23 +289,21 @@ class DebugAgents(mesa.Agent):
 class TrafficLight(mesa.Agent):
     """ Traffic light agent """
 
-    def __init__(self, unique_id, location, model):
+    def __init__(self, unique_id, direction, model):
         super().__init__(unique_id, model)
         self.status = 0
-        self.location = location
+        self.direction = direction
 
     def step(self):
-        # Detect towards a certain direction according to location
-        print("Detecting some stuff!")
-
-        if self.location == "up":
-            pass
-        elif self.location == "down":
-            pass
-        elif self.location == "left":
-            pass
+        if self.model.prio == []:
+            print("No queue found. Traffic lights will be set to 0")
+            self.status = 0
+            return
         else:
-            pass
+            if self.direction == self.model.prio[0]:
+                self.status = 3
+            else:
+                self.status = 1
 
 
 class Ambulance(mesa.Agent):
@@ -312,20 +314,20 @@ class Ambulance(mesa.Agent):
         self.velocity = 4 # it will travel only a meter at the time
 
         # Reference location with name
+        self.curr_side = ""
         self.curr_street = ""
         self.final_des = []
-
         self.inside_int = False
 
     def step(self):
         des_x, des_y = self.pos
         curr_pos = [des_x, des_y]
 
-        if (curr_pos == self.final_des):
+        if curr_pos == self.final_des:
             self.model.kill_agents.append(self)
             return
         else:
-            # move(self, self.final_des)
+            move(self, self.final_des)
             pass
 
 
@@ -337,25 +339,25 @@ class Car(mesa.Agent):
         self.velocity = 0 # it will travel only a meter at the time
 
         # Reference location with name
+        self.curr_side = ""
         self.curr_street = ""
         self.final_des = []
-
         self.inside_int = False
 
     def step(self):
         des_x, des_y = self.pos
         curr_pos = [des_x, des_y]
 
-        if (curr_pos == self.final_des):
+        if curr_pos == self.final_des:
             self.model.kill_agents.append(self)
             return
         else:
-            # move(self, self.final_des)
+            move(self, self.final_des)
             pass
 
 
+# INTERSECTION GO HERE
 class IntersectionModel(mesa.Model):
-    """A model that creates the space and spawns the required agents"""
 
     def __init__(self, max_cars_num, debug=False):
         self.max_cars = max_cars_num
@@ -369,14 +371,13 @@ class IntersectionModel(mesa.Model):
         # Creating different schedulers
         self.tl_scheduler = mesa.time.RandomActivation(self) # scheduler for steps
         self.vh_scheduler = mesa.time.RandomActivation(self) # scheduler for steps
-
         self.running = True # running while this is true
-        self.priority = []
 
-        # self.vel_time = 0
-        # self.tl_time = 0
+        self.prio = []
+        self.time = 0
 
-        # self.cycle = False
+        self.tf_cycle = False
+        self.vel_cycle = False
 
         # Sidewalks:
         x_val = np.union1d(np.array([i for i in range(18)]), np.array([i for i in range(24, 50)]))
@@ -597,14 +598,44 @@ class IntersectionModel(mesa.Model):
             self.unique_ids += 1
 
         # TESTING DETECTION OF TRAFFIC LIGHTS
-        tx = [19]
-        ty = [i for i in range(22, 24)]
 
-        for x in x_val_int:
-            for y in y_val_int:
-                agent = Car(self.unique_ids, self)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
+        # # Down
+        # tx = [19, 21, 18]
+        # ty = [i for i in range(18, 20)]
+
+        # for x in tx:
+        #     for y in ty:
+        #         agent = Car(self.unique_ids, self)
+        #         self.grid.place_agent(agent, (x, y))
+        #         self.unique_ids += 1
+
+        # # Up
+        # tx = [19, 20]
+        # ty = [i for i in range(29, 31)]
+
+        # for x in tx:
+        #     for y in ty:
+        #         agent = Car(self.unique_ids, self)
+        #         self.grid.place_agent(agent, (x, y))
+        #         self.unique_ids += 1
+
+        # agent = Car(self.unique_ids, self)
+        # self.grid.place_agent(agent, (22, 30))
+        # self.unique_ids += 1
+
+        # # Left
+        # ty = [22, 24, 25, 26]
+        # tx = [i for i in range(15, 17)]
+
+        # for x in tx:
+        #     for y in ty:
+        #         agent = Car(self.unique_ids, self)
+        #         self.grid.place_agent(agent, (x, y))
+        #         self.unique_ids += 1
+
+        # agent = Car(self.unique_ids, self)
+        # self.grid.place_agent(agent, (15, 27))
+        # self.unique_ids += 1
 
         for key in self.streets:
             for vals in self.streets[key]:
@@ -615,226 +646,187 @@ class IntersectionModel(mesa.Model):
                     self.unique_ids += 1
 
 
-    """ STEP FOR SENSOR """
-    def change_tl(self, prio_arr):
-        pass
-        # for conditions in prio_arr:
-        #     if (conditions == "up"):
-        #         for lights in self.tl_up:
-        #             lights.status = 3
+    """ GET TRAFFIC LIGHTS READ  """
+    def get_tf_reads(self):
+        s_up = [agents for agents in self.tl_scheduler.agents if agents.direction == "up"]
+        s_down = [agents for agents in self.tl_scheduler.agents if agents.direction == "down"]
+        s_left = [agents for agents in self.tl_scheduler.agents if agents.direction == "left"]
+        s_right = [agents for agents in self.tl_scheduler.agents if agents.direction == "right"]
 
-        #         for lights in self.tl_down:
-        #             lights.status = 1
+        decide = {}
+        count = 0
 
-        #         for lights in self.tl_left:
-        #             lights.status = 1
+        for one in s_up:
+            res_up = list()
+            # print(f"Up: searching with sensor in position {one.pos}")
 
-        #         for lights in self.tl_right:
-        #             lights.status = 1
+            for i in range(1, 5):
+                aux = (one.pos[0], one.pos[1] + i)
+                res_up.append(one.model.grid.get_cell_list_contents(aux))
 
-        #     elif (conditions == "down"):
-        #         for lights in self.tl_down:
-        #             lights.status = 3
+            for val in res_up:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
 
-        #         for lights in self.tl_up:
-        #             lights.status = 1
+        if (count != 0):
+            decide["up"] = count
 
-        #         for lights in self.tl_right:
-        #             lights.status = 1
+        count = 0
 
-        #         for lights in self.tl_left:
-        #             lights.status = 1
+        for two in s_down:
+            res_down = list()
+            # print(f"Down: searching with sensor in position {two.pos}")
 
-        #     elif (conditions == "left"):
+            for i in range(1, 5):
+                aux = (two.pos[0], two.pos[1] - i)
+                res_down.append(two.model.grid.get_cell_list_contents(aux))
 
-        #         for lights in self.tl_left:
-        #             lights.status = 3
+            for val in res_down:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
 
-        #         for lights in self.tl_down:
-        #             lights.status = 1
+        if (count != 0):
+            decide["down"] = count
 
-        #         for lights in self.tl_up:
-        #             lights.status = 1
+        count = 0
 
-        #         for lights in self.tl_right:
-        #             lights.status = 1
+        for three in s_left:
+            res_left = list()
+            # print(f"Left: {three}")
 
-        #     else:
-        #         for lights in self.tl_left:
-        #             lights.status = 3
+            for i in range(1, 5):
+                aux = (three.pos[0] - i, three.pos[1])
+                res_left.append(three.model.grid.get_cell_list_contents(aux))
 
-        #         for lights in self.tl_down:
-        #             lights.status = 1
+            for val in res_left:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
 
-        #         for lights in self.tl_up:
-        #             lights.status = 1
+        if (count != 0):
+            decide["left"] = count
 
-        #         for lights in self.tl_right:
-        #             lights.status = 3
+        count = 0
+
+        for four in s_right:
+            res_right = list()
+            # print(f"Right: {four}")
+
+            for i in range(1, 5):
+                aux = (four.pos[0] + i, four.pos[1])
+                res_right.append(four.model.grid.get_cell_list_contents(aux))
+
+            for val in res_right:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
+
+        if (count != 0):
+            decide["right"] = count
+
+        print(f"The traffic prio will be {decide}")
+        if decide == {}:
+            return []
+        else:
+            return sorted(decide, key=decide.get, reverse=True)
+
 
     """ STEP FOR SENSOR """
     def get_vel_reads(self):
-        pass
-        # decide = {}
-        # count = 0
-        # vel = 0
+        s_up = [agents for agents in self.tl_scheduler.agents if agents.direction == "up"]
+        s_down = [agents for agents in self.tl_scheduler.agents if agents.direction == "down"]
+        s_left = [agents for agents in self.tl_scheduler.agents if agents.direction == "left"]
+        s_right = [agents for agents in self.tl_scheduler.agents if agents.direction == "right"]
 
-        # for one in self.s_up:
-        #     res_up = list()
-        #     # print(f"Up: searching with sensor in position {one.pos}")
+        decide = {}
+        count = 0
+        vel = 0
 
-        #     for i in range(7, 18):
-        #         aux = (one.pos[0], one.pos[1] + i)
-        #         res_up.append(self.grid.get_cell_list_contents(aux))
+        for one in s_up:
+            res_up = list()
+            # print(f"Up: searching with sensor in position {one.pos}")
 
-        #     for val in res_up:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-        #                 vel += stuff.velocity
+            for i in range(7, 18):
+                aux = (one.pos[0], one.pos[1] + i)
+                res_up.append(self.grid.get_cell_list_contents(aux))
 
-        # if (count != 0):
-        #     decide["up"] = vel/count
+            for val in res_up:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
+                        vel += stuff.velocity
 
-        # count = 0
-        # vel = 0
+        if (count != 0):
+            decide["up"] = vel/count
 
-        # for two in self.s_down:
-        #     res_down = list()
-        #     # print(f"Down: searching with sensor in position {two.pos}")
+        count = 0
+        vel = 0
 
-        #     for i in range(5, 18):
-        #         aux = (two.pos[0], two.pos[1] - i)
-        #         res_down.append(self.grid.get_cell_list_contents(aux))
+        for two in s_down:
+            res_down = list()
+            # print(f"Down: searching with sensor in position {two.pos}")
 
-        #     for val in res_down:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-        #                 vel += vel
+            for i in range(5, 18):
+                aux = (two.pos[0], two.pos[1] - i)
+                res_down.append(self.grid.get_cell_list_contents(aux))
 
-        # if (count != 0):
-        #     decide["down"] = vel/count
+            for val in res_down:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
+                        vel += vel
 
-        # count = 0
-        # vel = 0
+        if (count != 0):
+            decide["down"] = vel/count
 
-        # for three in self.s_left:
-        #     res_left = list()
-        #     # print(f"Left: {three}")
+        count = 0
+        vel = 0
 
-        #     for i in range(5, 18):
-        #         aux = (three.pos[0] - i, three.pos[1])
-        #         res_left.append(self.grid.get_cell_list_contents(aux))
+        for three in s_left:
+            res_left = list()
+            # print(f"Left: {three}")
 
-        #     for val in res_left:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-        #                 vel += vel
+            for i in range(5, 18):
+                aux = (three.pos[0] - i, three.pos[1])
+                res_left.append(self.grid.get_cell_list_contents(aux))
 
-        # if (count != 0):
-        #     decide["left"] = vel/count
+            for val in res_left:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
+                        vel += vel
 
-        # count = 0
-        # vel = 0
+        if (count != 0):
+            decide["left"] = vel/count
 
-        # for four in self.s_right:
-        #     res_right = list()
-        #     # print(f"Right: {four}")
+        count = 0
+        vel = 0
 
-        #     for i in range(5, 18):
-        #         aux = (four.pos[0] + i, four.pos[1])
-        #         res_right.append(self.grid.get_cell_list_contents(aux))
+        for four in s_right:
+            res_right = list()
+            # print(f"Right: {four}")
 
-        #     for val in res_right:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-        #                 vel += vel
+            for i in range(5, 18):
+                aux = (four.pos[0] + i, four.pos[1])
+                res_right.append(self.grid.get_cell_list_contents(aux))
 
-        # if (count != 0):
-        #     decide["right"] = vel/count
+            for val in res_right:
+                for stuff in val:
+                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+                        count += 1
+                        vel += vel
 
-        # print(f"The priority list will be {decide}")
-        # return sorted(decide, key=decide.get, reverse=True)
+        if (count != 0):
+            decide["right"] = vel/count
 
-    # """ STEP FOR SENSOR """
-    # def get_tf_reads(self):
-        # decide = {}
-        # count = 0
+        print(f"The velocity prio will be {decide}")
+        if decide == {}:
+            return []
+        else:
+            return sorted(decide, key=decide.get, reverse=True)
 
-        # for one in self.s_up:
-        #     res_up = list()
-        #     # print(f"Up: searching with sensor in position {one.pos}")
-
-        #     for i in range(1, 5):
-        #         aux = (one.pos[0], one.pos[1] + i)
-        #         res_up.append(self.grid.get_cell_list_contents(aux))
-
-        #     for val in res_up:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-
-        # if (count != 0):
-        #     decide["up"] = count
-
-        # count = 0
-
-        # for two in self.s_down:
-        #     res_down = list()
-        #     # print(f"Down: searching with sensor in position {two.pos}")
-
-        #     for i in range(1, 5):
-        #         aux = (two.pos[0], two.pos[1] - i)
-        #         res_down.append(self.grid.get_cell_list_contents(aux))
-
-        #     for val in res_down:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-
-        # if (count != 0):
-        #     decide["down"] = count
-
-        # count = 0
-
-        # for three in self.s_left:
-        #     res_left = list()
-        #     # print(f"Left: {three}")
-
-        #     for i in range(1, 5):
-        #         aux = (three.pos[0] - i, three.pos[1])
-        #         res_left.append(self.grid.get_cell_list_contents(aux))
-
-        #     for val in res_left:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-
-        # if (count != 0):
-        #     decide["left"] = count
-
-        # count = 0
-
-        # for four in self.s_right:
-        #     res_right = list()
-        #     # print(f"Right: {four}")
-
-        #     for i in range(1, 5):
-        #         aux = (four.pos[0] + i, four.pos[1])
-        #         res_right.append(self.grid.get_cell_list_contents(aux))
-
-        #     for val in res_right:
-        #         for stuff in val:
-        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-        #                 count += 1
-
-        # if (count != 0):
-        #     decide["right"] = count
-
-        # return sorted(decide, key=decide.get, reverse=True)
 
     # SPAWN VEHICLES
     def spawnVehicles(self):
@@ -846,6 +838,8 @@ class IntersectionModel(mesa.Model):
 
             if spawn_prob > .30:
                 x, y = location # extract the location
+                spawn_pos = [x, y]
+
                 agent = Car(self.unique_ids, self) # creates agent
 
                 self.vh_scheduler.add(agent) # adds agent to scheduler
@@ -871,23 +865,33 @@ class IntersectionModel(mesa.Model):
                 random.shuffle(copy_of_dispawn)
 
                 for destination in copy_of_dispawn:
-                    if (get_distance(location, destination) <= 2):
+                    if (get_distance(location, destination) <= 10):
                         continue
                     else:
                         agent.final_des = destination
                         x_end, y_end = destination
+
+                        # Get current street name
+                        for key in self.streets:
+                            for vals in self.streets[key]:
+                                for side in self.streets[key][vals]:
+
+                                    if spawn_pos == side:
+                                        agent.curr_side = key # this will be which street
+                                        agent.curr_street = vals # this will be which side of the street
                         break
 
-                # if self.debug is True:
-                #     print(f" [[ Car ]] spawned at ({x}. {y}) with status of {status_debug}")
-                #     print(f"    ::- Will go to {agent.final_des}")
+                if self.debug is True:
+                    print(f" [[ Car ]] spawned at ({x}. {y}) with status of {status_debug}")
+                    print(f"    ::- Will go to {agent.final_des}")
 
-                # move(agent, agent.curr_des)
+                move(agent, agent.final_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
 
             elif spawn_prob < .20:
                 x, y = location # extract the location
+                spawn_pos = [x, y]
                 agent = Ambulance(self.unique_ids, self) # creates agent
 
                 self.vh_scheduler.add(agent) # adds agent to scheduler
@@ -918,7 +922,19 @@ class IntersectionModel(mesa.Model):
                     else:
                         agent.final_des = destination
                         x_end, y_end = destination
+
+                        for key in self.streets:
+                            for vals in self.streets[key]:
+                                for side in self.streets[key][vals]:
+
+                                    if spawn_pos == side:
+                                        agent.curr_street = key
+                                        agent.curr_side = vals
                         break
+
+                if self.debug is True:
+                    print(f" [[ Ambulance ]] spawned at ({x}. {y}) with status of {status_debug}")
+                    print(f"    ::- Will go to {agent.final_des}")
 
                 move(agent, agent.final_des)
                 self.unique_ids += 1
@@ -936,8 +952,65 @@ class IntersectionModel(mesa.Model):
         if self.curr_cars < self.max_cars:
             self.spawnVehicles()
 
-        self.tl_scheduler.step() # first make tl detect stuff
-        self.vh_scheduler.step() # then VEHICLES can move
+        print("Vehicles have spawned!")
+
+        if self.tf_cycle is True: # if there is a cycle active
+
+            print("Traffic cycle is running!")
+
+            if self.time == 40:
+
+                # Do while intersection is not empty
+                int_empty = self.check_int_empty()
+
+                if int_empty is True:
+                    self.tf_time = 0
+                    self.tf_cycle = False
+                else:
+                    self.vh_scheduler.step() # move vehicles
+
+            else:
+                self.vh_scheduler.step() # move vehicles
+                self.time += 1
+
+        elif self.vel_cycle is True:
+
+            print("Velocity cycle is running!")
+
+            if self.time == 40:
+
+                # Do while intersection is not empty
+                int_empty = self.check_inter_empty()
+
+                if int_empty is True:
+                    self.time = 0
+                    self.tf_cycle = False
+                else:
+                    self.vh_scheduler.step() # move vehicles
+
+            else:
+                self.vh_scheduler.step() # move vehicles
+                self.time += 1
+        else:
+            print("No cycle is running! Scanning for priority")
+            self.prio = self.get_tf_reads() # traffic has priority
+
+            if self.prio == []: # if no traffic then get vel reads
+                self.prio = self.get_vel_reads()
+
+                if self.prio == []:
+                    print("No vel nor tf reads found")
+                    self.tl_scheduler.step()
+                else:
+                    print("Vel cycle found!")
+                    vel_cycle = True
+                    self.tl_scheduler.step()
+
+            else: # tf prio found. Start cycle
+                tf_cycle = True
+                self.tl_scheduler.step()
+
+            self.vh_scheduler.step()
 
         for to_kill in self.kill_agents:
             self.grid.remove_agent(to_kill)

@@ -34,9 +34,9 @@ def agent_portrayal(agent):
         portrayal["Layer"] = 0
         portrayal["r"] = 0.3
     elif isinstance(agent, Car):
-        portrayal["Color"] = "blue"
+        portrayal["Color"] = "brown"
         portrayal["Layer"] = 1
-        portrayal["r"] = 1
+        portrayal["r"] = 0.9
     elif isinstance(agent, Ambulance):
             portrayal["Color"] = "orange"
             portrayal["Layer"] = 1
@@ -75,7 +75,7 @@ def agent_portrayal(agent):
             elif (agent.status == "street"):
                 portrayal["Color"] = "blue"
                 portrayal["Layer"] = 1
-                portrayal["r"] = 0.5
+                portrayal["r"] = 0.1
         else:
             portrayal["Color"] = "brown"
             portrayal["Layer"] = 1
