@@ -6,7 +6,6 @@ import math
 
 def move(agent, to_):
     # According to status will do some different things.
-    print("Will move!")
     if agent.status == 0:
 
         # Possible gments for an agent
@@ -37,23 +36,21 @@ def move(agent, to_):
                         else:
                             cannot_use_step = False
                     else:
-                        print("Checking some stuff!")
                         x_cur, y_cur = agent.pos
                         curr_loc = [x_cur, y_cur]
 
-                        print(curr_loc)
-                        print(agent.model.intersection)
+                        # print(curr_loc)
+                        # print(agent.model.intersection)
 
                         for val in agent.model.intersection:
                             if val == curr_loc:
-                                print("Inside intersection")
+                                # print("Inside intersection")
                                 agent.inside_int = True
                                 break
 
             if cannot_use_step:
                 continue
             else:
-                print(steps)
                 depurated_steps.append(steps)
 
         if (len(depurated_steps) == 0):
@@ -101,23 +98,23 @@ def move(agent, to_):
                             else:
                                 cannot_use_step = False
                         else:
-                            print("Checking some stuff!")
+                            # print("Checking some stuff!")
                             x_cur, y_cur = agent.pos
                             curr_loc = [x_cur, y_cur]
 
-                            print(curr_loc)
-                            print(agent.model.intersection)
+                            # print(curr_loc)
+                            # print(agent.model.intersection)
 
                             for val in agent.model.intersection:
                                 if val == curr_loc:
-                                    print("Inside intersection")
+                                    # print("Inside intersection")
                                     agent.inside_int = True
                                     break
 
                 if cannot_use_step:
                     continue
                 else:
-                    print(steps)
+                    # print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
@@ -270,28 +267,6 @@ def get_distance(p, q):
     """ Returns euclidean distance from A to B"""
     return math.sqrt((q[1] - p[1])**2 + (q[0] - p[0])**2)
 
-def set_name(x, y):
-    name_dict = {
-            0:  { 26 : "sp-left", 24 : "dsp-left" },
-            20: { 0 : "sp-down", 49 : "dsp-up" },
-            22: { 49 : "sp-up", 0 : "dsp-down" },
-            49: { 24 : "sp-right", 26 : "dsp-right" }
-        }
-
-    return name_dict[x][y]
-
-
-def set_middle(origin, destiny):
-    # print(f"Origin is {origin} and destiny is {destiny}")
-    location_dict = {
-            "sp-left" :  { "dsp-up" : [20, 26], "dsp-down" : [22, 26], "dsp-right" : [22, 26]},
-            "sp-right" : { "dsp-up" : [20, 24], "dsp-down" : [22, 24], "dsp-left" : [20, 24]},
-            "sp-down" : { "dsp-up" : [20, 26], "dsp-left" : [20, 24], "dsp-right" : [20, 26]},
-            "sp-up" : { "dsp-down" : [22, 24], "dsp-left" : [22, 24], "dsp-right" : [22, 26]}
-    }
-
-    return location_dict[origin][destiny]
-
 
 class Sidewalk(mesa.Agent):
     """An agent that sims the sidewalk of the street"""
@@ -313,7 +288,20 @@ class TrafficLight(mesa.Agent):
     def __init__(self, unique_id, location, model):
         super().__init__(unique_id, model)
         self.status = 0
-        self.location =  location
+        self.location = location
+
+    def step(self):
+        # Detect towards a certain direction according to location
+        print("Detecting some stuff!")
+
+        if self.location == "up":
+            pass
+        elif self.location == "down":
+            pass
+        elif self.location == "left":
+            pass
+        else:
+            pass
 
 
 class Ambulance(mesa.Agent):
@@ -324,25 +312,22 @@ class Ambulance(mesa.Agent):
         self.velocity = 4 # it will travel only a meter at the time
 
         # Reference location with name
-        self.origin = ""
-        self.destiny = ""
+        self.curr_street = ""
         self.final_des = []
-        self.curr_des = []
 
         self.inside_int = False
 
     def step(self):
-        move(self, self.curr_des)
-
         des_x, des_y = self.pos
         curr_pos = [des_x, des_y]
 
-        if self.pos[0] == self.curr_des[0] and self.pos[1] == self.curr_des[1]:
-            if ((self.curr_des[0] == self.final_des[0]) and (self.curr_des[1] == self.final_des[1])):
-                self.model.kill_agents.append(self)
-                return
-            else:
-                self.curr_des = self.final_des
+        if (curr_pos == self.final_des):
+            self.model.kill_agents.append(self)
+            return
+        else:
+            # move(self, self.final_des)
+            pass
+
 
 class Car(mesa.Agent):
     """An agent that sims a roomba"""
@@ -352,35 +337,21 @@ class Car(mesa.Agent):
         self.velocity = 0 # it will travel only a meter at the time
 
         # Reference location with name
-        self.origin = ""
-        self.destiny = ""
+        self.curr_street = ""
         self.final_des = []
-        self.curr_des = []
 
         self.inside_int = False
 
     def step(self):
-        #move(self, self.curr_des)
+        des_x, des_y = self.pos
+        curr_pos = [des_x, des_y]
 
-        if self.pos[0] == self.curr_des[0] and self.pos[1] == self.curr_des[1]:
-            if ((self.curr_des[0] == self.final_des[0]) and (self.curr_des[1] == self.final_des[1])):
-                self.model.kill_agents.append(self)
-                return
-            else:
-                self.curr_des = self.final_des
-
-        # g for the sorrounding areas
-        #   These are current agent status dependent:
-        #   if found an ambulance then "go to the nearest wall" -> for this the car will have to check its sorroundings and find the nearest Sidewalk agent
-        #       if ambulanced found and not near a wall then go to wall
-        #       but if ambulance found then just continue going
-        #       continue
-        #   else check for traffic light ahead
-        #       if traffic light is red then velocity will turn 0 and will not g
-        #       if traffic light yellow reduce and in range of sensors (by 5) reduce speed by one
-        #       if traffic light green continue
-
-        #  If right at the insersection then turn to the proper destination. Will do this in several steps.
+        if (curr_pos == self.final_des):
+            self.model.kill_agents.append(self)
+            return
+        else:
+            # move(self, self.final_des)
+            pass
 
 
 class IntersectionModel(mesa.Model):
@@ -463,50 +434,148 @@ class IntersectionModel(mesa.Model):
 
         """ CREATING STATIC AGENTS FOR TESTING BEHAVIOR OR DEBUGGING"""
         self.spawn = [
-                    [22,49], # up
+                    [21, 49], # up-one
+                    [22, 49], # up-one
+                    [23, 49], # up-one
+
+                    [18, 0], # down
                     [19, 0], # down
+                    [20, 0], # down
+
+                    [0, 25], # left
                     [0, 26], # left
-                    [49, 23] # right
+                    [0, 27], # left
+
+                    [49, 22], # right
+                    [49, 23], # right
+                    [49, 24], # right
                 ]
 
         self.dispawn = [
-                    [19,49], # up
+                    [18, 49], # up
+                    [19, 49], # up
+                    [20, 49], # up
+
+                    [21, 0], # down
                     [22, 0], # down
+                    [23, 0], # down
+
+                    [0,22], # left
                     [0,23], # left
-                    [49, 26] # right
+                    [0,24], # left
+
+                    [49, 25], # right
+                    [49, 26], # right
+                    [49, 27], # right
                 ]
 
-
-
+        # Intersections
         self.intersection = []
 
-        x_val_int = [20, 21]
-        y_val_int = [i for i in range(0, 22)]
+        x_val_int = [i for i in range(18, 24)]
+        y_val_int = [i for i in range(22, 28)]
 
         for x in x_val_int:
             for y in y_val_int:
                 self.intersection.append([x, y])
 
-        # self.intersection = []
+        self.streets = {}
 
-        # x_val_int = [i for i in range(18, 24)]
-        # y_val_int = [i for i in range(22, 28)]
+        down_dict = {}
+        down_left = []
+        down_right = []
 
-        # for x in x_val_int:
-        #     for y in y_val_int:
-        #         self.intersection.append([x, y])
-        # self.intersection = [
-        #         [19, 22], [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
-        #         [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
-        #         [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]
-        #         ]
+        # Down left street
+        x_val_int = [18, 19, 20]
+        y_val_int = [i for i in range(0, 22)]
 
-        self.down_streets = {
-                "down" : {"left" : [], "right" : []},
-                "up" : {"left" : [], "right" : []},
-                "left" : {"up" :[], "down" : []},
-                "right" : {"up" : [], "down" : []}
-        }
+        for x in x_val_int:
+            for y in y_val_int:
+                down_left.append([x, y])
+
+        # Down right street
+        x_val_int = [21, 22, 23]
+        y_val_int = [i for i in range(0, 22)]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                down_right.append([x, y])
+
+        down_dict["right"] = down_right
+        down_dict["left"] = down_left
+        self.streets["down"] = down_dict
+
+        up_dict = {}
+        up_left = []
+        up_right = []
+
+        # Up left street
+        x_val_int = [18, 19, 20]
+        y_val_int = [i for i in range(28, 50)]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                up_left.append([x, y])
+
+        # Up right street
+        x_val_int = [21, 22, 23]
+        y_val_int = [i for i in range(28, 50)]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                up_right.append([x, y])
+
+        up_dict["right"] = up_right
+        up_dict["left"] = up_left
+        self.streets["up"] = up_dict
+
+        left_down = []
+        left_up = []
+        left_dict = {}
+
+        # Left down street
+        x_val_int = [i for i in range(0, 18)]
+        y_val_int = [22, 23, 24]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                left_down.append([x, y])
+
+        # Left up street
+        x_val_int = [i for i in range(0, 18)]
+        y_val_int = [25, 26, 27]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                left_up.append([x, y])
+
+        left_dict["up"] = left_up
+        left_dict["down"] = left_down
+        self.streets["left"] = left_dict
+
+        right_down = []
+        right_up = []
+        right_dict = {}
+
+        # Right down street
+        x_val_int = [i for i in range(24, 50)]
+        y_val_int = [22, 23, 24]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                right_down.append([x, y])
+
+        # Right up street
+        x_val_int = [i for i in range(24, 50)]
+        y_val_int = [25, 26, 27]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                right_up.append([x, y])
+
+        right_dict["up"] =  right_up
+        right_dict["down"] = right_down
+        self.streets["right"] = right_dict
 
         # Create a spawn agent in each spawning area
         for location in self.spawn:
@@ -526,6 +595,14 @@ class IntersectionModel(mesa.Model):
             agent = DebugAgents(self.unique_ids, "intersection", self)
             self.grid.place_agent(agent, (x, y))
             self.unique_ids += 1
+
+        # for key in self.streets:
+        #     for vals in self.streets[key]:
+        #         for side in self.streets[key][vals]:
+        #             x, y = side
+        #             agent = DebugAgents(self.unique_ids, "street", self)
+        #             self.grid.place_agent(agent, (x, y))
+        #             self.unique_ids += 1
 
 
     """ STEP FOR SENSOR """
@@ -748,7 +825,6 @@ class IntersectionModel(mesa.Model):
 
         # return sorted(decide, key=decide.get, reverse=True)
 
-
     # SPAWN VEHICLES
     def spawnVehicles(self):
         for location in self.spawn:
@@ -763,7 +839,6 @@ class IntersectionModel(mesa.Model):
 
                 self.vh_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
-                agent.origin = set_name(x, y)
 
                 status_prob = round(random.uniform(0, 1), 2)
                 status_debug = ""
@@ -790,15 +865,11 @@ class IntersectionModel(mesa.Model):
                     else:
                         agent.final_des = destination
                         x_end, y_end = destination
-                        agent.destiny = set_name(x_end, y_end)
                         break
 
                 # if self.debug is True:
                 #     print(f" [[ Car ]] spawned at ({x}. {y}) with status of {status_debug}")
                 #     print(f"    ::- Will go to {agent.final_des}")
-
-                # At spawn set self.curr_des to the middle point
-                agent.curr_des = set_middle(agent.origin, agent.destiny)
 
                 # move(agent, agent.curr_des)
                 self.unique_ids += 1
@@ -810,7 +881,6 @@ class IntersectionModel(mesa.Model):
 
                 self.vh_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
-                agent.origin = set_name(x, y)
 
                 status_prob = round(random.uniform(0, 1), 2)
                 status_debug = ""
@@ -837,12 +907,9 @@ class IntersectionModel(mesa.Model):
                     else:
                         agent.final_des = destination
                         x_end, y_end = destination
-                        agent.destiny = set_name(x_end, y_end)
                         break
 
-                agent.curr_des = set_middle(agent.origin, agent.destiny)
-
-                # move(agent, agent.curr_des)
+                move(agent, agent.final_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
             else:
@@ -860,35 +927,6 @@ class IntersectionModel(mesa.Model):
 
         self.tl_scheduler.step() # first make tl detect stuff
         self.vh_scheduler.step() # then VEHICLES can move
-
-        # LIFECYCLE
-        # if self.cycle is False:
-        #     # print("Cycle is false")
-        #     self.priority = self.get_vel_reads()
-        #     self.change_tl(self.priority)
-
-        #     if self.priority == []:
-        #         # print("Priority not found yet")
-        #         return
-        #     else:
-        #         self.vel_time += 1
-        #         self.cycle = True
-
-        #     # TODO: add that all agents have to stop if light is red
-
-        # if self.cycle is True:
-        #     if self.vel_time == 60:
-        #         self.priority = self.get_tf_reads()
-        #         self.change_tl(self.priority)
-
-        #         if self.tf_time == 60:
-        #             self.cycle = False
-        #             self.vel_time = 0
-        #             self.tf_time = 0
-        #         else:
-        #             self.tf_time += 1
-        #     else:
-        #         self.vel_time += 1
 
         for to_kill in self.kill_agents:
             self.grid.remove_agent(to_kill)

@@ -75,7 +75,7 @@ def agent_portrayal(agent):
             elif (agent.status == "street"):
                 portrayal["Color"] = "blue"
                 portrayal["Layer"] = 1
-                portrayal["r"] = 0.7
+                portrayal["r"] = 0.5
         else:
             portrayal["Color"] = "brown"
             portrayal["Layer"] = 1
