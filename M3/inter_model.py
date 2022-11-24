@@ -309,7 +309,7 @@ class Sensor(mesa.Agent):
         self.direction = direction
         self.checking = 0
 
-        # g if there is traffic on each road
+        # move if there is traffic on each road
         #   If inside a certain range from the sensors there is already traffic, then given the cars number assign priority
         #       continue the algorithm
         #   Else
@@ -429,8 +429,8 @@ class IntersectionModel(mesa.Model):
         self.cycle = False
 
         # Sidewalks:
-        x_val = np.union1d(np.array([i for i in range(19)]), np.array([i for i in range(24, 50)]))
-        y_val = np.union1d(np.array([i for i in range(23)]), np.array([i for i in range(28, 50)]))
+        x_val = np.union1d(np.array([i for i in range(18)]), np.array([i for i in range(24, 50)]))
+        y_val = np.union1d(np.array([i for i in range(22)]), np.array([i for i in range(28, 50)]))
 
         self.unique_ids = 0
 
@@ -442,8 +442,8 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         # Paint the traffic lights
-        tl_one_x = [18]
-        tl_one_y = [23, 24, 25, 26, 27]
+        tl_one_x = [17]
+        tl_one_y = [25, 26, 27]
 
         for x in tl_one_x:
             for y in tl_one_y:
@@ -453,8 +453,8 @@ class IntersectionModel(mesa.Model):
                 self.tl_left.append(agent)
                 self.unique_ids += 1
 
-        sensor_one_x = [18]
-        sensor_one_y = [i for i in range(23,28) ]
+        sensor_one_x = [17]
+        sensor_one_y = [i for i in range(25,28) ]
 
         for x in sensor_one_x:
             for y in sensor_one_y:
@@ -464,7 +464,7 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         tl_two_x = [24]
-        tl_two_y = [23, 24, 25, 26, 27]
+        tl_two_y = [22, 23, 24]
 
         for x in tl_two_x:
             for y in tl_two_y:
@@ -475,7 +475,7 @@ class IntersectionModel(mesa.Model):
                 self.unique_ids += 1
 
         sensor_two_x = [24]
-        sensor_two_y = [i for i in range(23,28) ]
+        sensor_two_y = [i for i in range(22,25) ]
 
         for x in sensor_two_x:
             for y in sensor_two_y:
@@ -484,8 +484,8 @@ class IntersectionModel(mesa.Model):
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        tl_three_x = [19, 20, 21, 22, 23]
-        tl_three_y = [22]
+        tl_three_x = [18, 19, 20]
+        tl_three_y = [21]
 
         for x in tl_three_x:
             for y in tl_three_y:
@@ -495,7 +495,7 @@ class IntersectionModel(mesa.Model):
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        sensor_three_x = [i for i in range(19, 24)]
+        sensor_three_x = [i for i in range(18, 21)]
         sensor_three_y = [22]
 
         for x in sensor_three_x:
@@ -505,7 +505,7 @@ class IntersectionModel(mesa.Model):
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        tl_four_x = [19, 20, 21, 22, 23]
+        tl_four_x = [21, 22, 23]
         tl_four_y = [28]
 
         for x in tl_four_x:
@@ -516,7 +516,7 @@ class IntersectionModel(mesa.Model):
                 self.tl_up.append(agent)
                 self.unique_ids += 1
 
-        sensor_four_x = [i for i in range(19, 24)]
+        sensor_four_x = [i for i in range(21, 24)]
         sensor_four_y = [28]
 
         for x in sensor_four_x:
