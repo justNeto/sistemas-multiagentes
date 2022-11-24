@@ -58,15 +58,6 @@ def agent_portrayal(agent):
             portrayal["Color"] = "black"
             portrayal["Layer"] = 1
             portrayal["r"] = 0.5
-    elif isinstance(agent, Sensor):
-            if (agent.model.debug is True):
-                portrayal["Color"] = "blue"
-                portrayal["Layer"] = 1
-                portrayal["r"] = 0.2 # 0.2
-            else:
-                portrayal["Color"] = "blue"
-                portrayal["Layer"] = 1
-                portrayal["r"] = 0
     elif isinstance(agent, DebugAgents):
         if (agent.model.debug is True):
             if (agent.status == "dispawn"):
@@ -81,6 +72,10 @@ def agent_portrayal(agent):
                 portrayal["Color"] = "orange"
                 portrayal["Layer"] = 1
                 portrayal["r"] = 0.5
+            elif (agent.status == "street"):
+                portrayal["Color"] = "blue"
+                portrayal["Layer"] = 1
+                portrayal["r"] = 0.7
         else:
             portrayal["Color"] = "brown"
             portrayal["Layer"] = 1

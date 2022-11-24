@@ -3,6 +3,7 @@ import numpy as np
 import random
 import math
 
+
 def move(agent, to_):
     # According to status will do some different things.
     print("Will move!")
@@ -263,6 +264,7 @@ def move(agent, to_):
 
             agent.model.grid.move_agent(agent, tuple(e for e in best))
 
+
 # Some useful methods that are not dependent of an agent
 def get_distance(p, q):
     """ Returns euclidean distance from A to B"""
@@ -278,6 +280,7 @@ def set_name(x, y):
 
     return name_dict[x][y]
 
+
 def set_middle(origin, destiny):
     # print(f"Origin is {origin} and destiny is {destiny}")
     location_dict = {
@@ -288,6 +291,7 @@ def set_middle(origin, destiny):
     }
 
     return location_dict[origin][destiny]
+
 
 class Sidewalk(mesa.Agent):
     """An agent that sims the sidewalk of the street"""
@@ -302,35 +306,14 @@ class DebugAgents(mesa.Agent):
         super().__init__(unique_id, model)
         self.status = status
 
-class Sensor(mesa.Agent):
-    """An agent that actually senses a car and does stuff with it """
-    def __init__(self, unique_id, direction, model):
-        super().__init__(unique_id, model)
-        self.direction = direction
-        self.checking = 0
-
-        # move if there is traffic on each road
-        #   If inside a certain range from the sensors there is already traffic, then given the cars number assign priority
-        #       continue the algorithm
-        #   Else
-        #       Sensors will throw "infrared" to cars in their corresponding direction and find the car agents' velocity
-        #           Get the average velocity for each street. Make priority queue given the average speed of cars
-
-        # Wait some time (a.k.a) wait some arbitrary number of steps
-        #   After time is over
-        #       g if there are still cars in the intersection
-        #       Set all the traffic lights red
-        #       Wait until intersection is freed
-        #       Continue
-        #   Go through the rest of the streets in the queu and assign the same time. Go to wait so time. Pop the current street in queue
-
-        # Repeat
 
 class TrafficLight(mesa.Agent):
-    """An agent that sims the light colors but is only for painting of the street"""
-    def __init__(self, unique_id, model):
+    """ Traffic light agent """
+
+    def __init__(self, unique_id, location, model):
         super().__init__(unique_id, model)
         self.status = 0
+        self.location =  location
 
 
 class Ambulance(mesa.Agent):
@@ -377,7 +360,7 @@ class Car(mesa.Agent):
         self.inside_int = False
 
     def step(self):
-        move(self, self.curr_des)
+        #move(self, self.curr_des)
 
         if self.pos[0] == self.curr_des[0] and self.pos[1] == self.curr_des[1]:
             if ((self.curr_des[0] == self.final_des[0]) and (self.curr_des[1] == self.final_des[1])):
@@ -399,6 +382,7 @@ class Car(mesa.Agent):
 
         #  If right at the insersection then turn to the proper destination. Will do this in several steps.
 
+
 class IntersectionModel(mesa.Model):
     """A model that creates the space and spawns the required agents"""
 
@@ -408,25 +392,20 @@ class IntersectionModel(mesa.Model):
         self.curr_cars = 0 # initially zero
 
         self.kill_agents = [] # agents to kill after each step
+
         self.grid = mesa.space.MultiGrid(50, 50, False) # create the space of a width and height room_width, room_height and no torodoidal
-        self.schedule = mesa.time.RandomActivation(self) # scheduler for steps
+
+        # Creating different schedulers
+        self.tl_scheduler = mesa.time.RandomActivation(self) # scheduler for steps
+        self.vh_scheduler = mesa.time.RandomActivation(self) # scheduler for steps
+
         self.running = True # running while this is true
-
-        self.s_left = []
-        self.s_right = []
-        self.s_down = []
-        self.s_up = []
-
-        self.tl_left = []
-        self.tl_right = []
-        self.tl_down = []
-        self.tl_up = []
-
         self.priority = []
-        self.vel_time = 0
-        self.tf_time = 0
-        self.tf_time = 0
-        self.cycle = False
+
+        # self.vel_time = 0
+        # self.tl_time = 0
+
+        # self.cycle = False
 
         # Sidewalks:
         x_val = np.union1d(np.array([i for i in range(18)]), np.array([i for i in range(24, 50)]))
@@ -434,32 +413,21 @@ class IntersectionModel(mesa.Model):
 
         self.unique_ids = 0
 
+        # Creating the map
         for x in x_val:
             for y in y_val:
                 agent = Sidewalk(self.unique_ids, self) # constructor for Sidewalk
-                #self.schedule.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
-        # Paint the traffic lights
+        # Creating the traffic lights agents
         tl_one_x = [17]
         tl_one_y = [25, 26, 27]
 
         for x in tl_one_x:
             for y in tl_one_y:
-                agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
-                #self.schedule.add(agent) # adds agent to scheduler
-                self.grid.place_agent(agent, (x, y))
-                self.tl_left.append(agent)
-                self.unique_ids += 1
-
-        sensor_one_x = [17]
-        sensor_one_y = [i for i in range(25,28) ]
-
-        for x in sensor_one_x:
-            for y in sensor_one_y:
-                agent = Sensor(self.unique_ids, "left", self)
-                self.s_left.append(agent)
+                agent = TrafficLight(self.unique_ids, "left", self) # constructor for Sidewalk
+                self.tl_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -468,19 +436,8 @@ class IntersectionModel(mesa.Model):
 
         for x in tl_two_x:
             for y in tl_two_y:
-                agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
-                # self.schedule.add(agent) # adds agent to scheduler
-                self.tl_right.append(agent)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
-
-        sensor_two_x = [24]
-        sensor_two_y = [i for i in range(22,25) ]
-
-        for x in sensor_two_x:
-            for y in sensor_two_y:
-                agent = Sensor(self.unique_ids, "right", self) # constructor for sensor
-                self.s_right.append(agent)
+                agent = TrafficLight(self.unique_ids, "right", self) # constructor for Sidewalk
+                self.tl_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -489,19 +446,8 @@ class IntersectionModel(mesa.Model):
 
         for x in tl_three_x:
             for y in tl_three_y:
-                agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
-                # self.schedule.add(agent) # adds agent to scheduler
-                self.tl_down.append(agent)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
-
-        sensor_three_x = [i for i in range(18, 21)]
-        sensor_three_y = [22]
-
-        for x in sensor_three_x:
-            for y in sensor_three_y:
-                agent = Sensor(self.unique_ids, "down", self) # constructor for sensor
-                self.s_down.append(agent)
+                agent = TrafficLight(self.unique_ids, "down", self) # constructor for Sidewalk
+                self.tl_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
@@ -510,41 +456,57 @@ class IntersectionModel(mesa.Model):
 
         for x in tl_four_x:
             for y in tl_four_y:
-                agent = TrafficLight(self.unique_ids, self) # constructor for Sidewalk
-                # self.schedule.add(agent) # adds agent to scheduler
-                self.grid.place_agent(agent, (x, y))
-                self.tl_up.append(agent)
-                self.unique_ids += 1
-
-        sensor_four_x = [i for i in range(21, 24)]
-        sensor_four_y = [28]
-
-        for x in sensor_four_x:
-            for y in sensor_four_y:
-                agent = Sensor(self.unique_ids, "up", self) # constructor for Sidewalk
-                self.s_up.append(agent)
+                agent = TrafficLight(self.unique_ids, "up", self) # constructor for Sidewalk
+                self.tl_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 self.unique_ids += 1
 
         """ CREATING STATIC AGENTS FOR TESTING BEHAVIOR OR DEBUGGING"""
         self.spawn = [
                     [22,49], # up
-                    [20, 0], # down
+                    [19, 0], # down
                     [0, 26], # left
-                    [49, 24] # right
+                    [49, 23] # right
                 ]
 
         self.dispawn = [
-                    [20,49], # up
+                    [19,49], # up
                     [22, 0], # down
-                    [0,24], # left
+                    [0,23], # left
                     [49, 26] # right
                 ]
 
-        self.intersection = [
-                [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
-                [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
-                [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]]
+
+
+        self.intersection = []
+
+        x_val_int = [20, 21]
+        y_val_int = [i for i in range(0, 22)]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                self.intersection.append([x, y])
+
+        # self.intersection = []
+
+        # x_val_int = [i for i in range(18, 24)]
+        # y_val_int = [i for i in range(22, 28)]
+
+        # for x in x_val_int:
+        #     for y in y_val_int:
+        #         self.intersection.append([x, y])
+        # self.intersection = [
+        #         [19, 22], [19, 23], [19, 24],[19, 25], [19, 26], [19, 27], [20, 23], [20, 24], [20, 25], [20, 26], [20, 27],
+        #         [21, 23], [21, 24], [21, 25], [21, 26], [21, 27], [22, 23], [22, 24], [22, 25], [22, 26], [22, 27],
+        #         [23, 23], [23, 24], [23, 25], [23, 26], [23, 27]
+        #         ]
+
+        self.down_streets = {
+                "down" : {"left" : [], "right" : []},
+                "up" : {"left" : [], "right" : []},
+                "left" : {"up" :[], "down" : []},
+                "right" : {"up" : [], "down" : []}
+        }
 
         # Create a spawn agent in each spawning area
         for location in self.spawn:
@@ -556,6 +518,12 @@ class IntersectionModel(mesa.Model):
         for location in self.dispawn:
             x, y = location
             agent = DebugAgents(self.unique_ids, "dispawn", self)
+            self.grid.place_agent(agent, (x, y))
+            self.unique_ids += 1
+
+        for location in self.intersection:
+            x, y = location
+            agent = DebugAgents(self.unique_ids, "intersection", self)
             self.grid.place_agent(agent, (x, y))
             self.unique_ids += 1
 
@@ -618,172 +586,172 @@ class IntersectionModel(mesa.Model):
 
     """ STEP FOR SENSOR """
     def get_vel_reads(self):
-        decide = {}
-        count = 0
-        vel = 0
+        pass
+        # decide = {}
+        # count = 0
+        # vel = 0
 
-        for one in self.s_up:
-            res_up = list()
-            # print(f"Up: searching with sensor in position {one.pos}")
+        # for one in self.s_up:
+        #     res_up = list()
+        #     # print(f"Up: searching with sensor in position {one.pos}")
 
-            for i in range(7, 18):
-                aux = (one.pos[0], one.pos[1] + i)
-                res_up.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(7, 18):
+        #         aux = (one.pos[0], one.pos[1] + i)
+        #         res_up.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_up:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
-                        vel += stuff.velocity
+        #     for val in res_up:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
+        #                 vel += stuff.velocity
 
-        if (count != 0):
-            decide["up"] = vel/count
+        # if (count != 0):
+        #     decide["up"] = vel/count
 
-        count = 0
-        vel = 0
+        # count = 0
+        # vel = 0
 
-        for two in self.s_down:
-            res_down = list()
-            # print(f"Down: searching with sensor in position {two.pos}")
+        # for two in self.s_down:
+        #     res_down = list()
+        #     # print(f"Down: searching with sensor in position {two.pos}")
 
-            for i in range(5, 18):
-                aux = (two.pos[0], two.pos[1] - i)
-                res_down.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(5, 18):
+        #         aux = (two.pos[0], two.pos[1] - i)
+        #         res_down.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_down:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
-                        vel += vel
+        #     for val in res_down:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
+        #                 vel += vel
 
-        if (count != 0):
-            decide["down"] = vel/count
+        # if (count != 0):
+        #     decide["down"] = vel/count
 
-        count = 0
-        vel = 0
+        # count = 0
+        # vel = 0
 
-        for three in self.s_left:
-            res_left = list()
-            # print(f"Left: {three}")
+        # for three in self.s_left:
+        #     res_left = list()
+        #     # print(f"Left: {three}")
 
-            for i in range(5, 18):
-                aux = (three.pos[0] - i, three.pos[1])
-                res_left.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(5, 18):
+        #         aux = (three.pos[0] - i, three.pos[1])
+        #         res_left.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_left:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
-                        vel += vel
+        #     for val in res_left:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
+        #                 vel += vel
 
-        if (count != 0):
-            decide["left"] = vel/count
+        # if (count != 0):
+        #     decide["left"] = vel/count
 
-        count = 0
-        vel = 0
+        # count = 0
+        # vel = 0
 
-        for four in self.s_right:
-            res_right = list()
-            # print(f"Right: {four}")
+        # for four in self.s_right:
+        #     res_right = list()
+        #     # print(f"Right: {four}")
 
-            for i in range(5, 18):
-                aux = (four.pos[0] + i, four.pos[1])
-                res_right.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(5, 18):
+        #         aux = (four.pos[0] + i, four.pos[1])
+        #         res_right.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_right:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
-                        vel += vel
+        #     for val in res_right:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
+        #                 vel += vel
 
-        if (count != 0):
-            decide["right"] = vel/count
+        # if (count != 0):
+        #     decide["right"] = vel/count
 
-        print(f"The priority list will be {decide}")
-        return sorted(decide, key=decide.get, reverse=True)
+        # print(f"The priority list will be {decide}")
+        # return sorted(decide, key=decide.get, reverse=True)
 
-    """ STEP FOR SENSOR """
-    def get_tf_reads(self):
-        decide = {}
-        count = 0
+    # """ STEP FOR SENSOR """
+    # def get_tf_reads(self):
+        # decide = {}
+        # count = 0
 
-        for one in self.s_up:
-            res_up = list()
-            # print(f"Up: searching with sensor in position {one.pos}")
+        # for one in self.s_up:
+        #     res_up = list()
+        #     # print(f"Up: searching with sensor in position {one.pos}")
 
-            for i in range(1, 5):
-                aux = (one.pos[0], one.pos[1] + i)
-                res_up.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(1, 5):
+        #         aux = (one.pos[0], one.pos[1] + i)
+        #         res_up.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_up:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
+        #     for val in res_up:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
 
-        if (count != 0):
-            decide["up"] = count
+        # if (count != 0):
+        #     decide["up"] = count
 
-        count = 0
+        # count = 0
 
-        for two in self.s_down:
-            res_down = list()
-            # print(f"Down: searching with sensor in position {two.pos}")
+        # for two in self.s_down:
+        #     res_down = list()
+        #     # print(f"Down: searching with sensor in position {two.pos}")
 
-            for i in range(1, 5):
-                aux = (two.pos[0], two.pos[1] - i)
-                res_down.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(1, 5):
+        #         aux = (two.pos[0], two.pos[1] - i)
+        #         res_down.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_down:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
+        #     for val in res_down:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
 
-        if (count != 0):
-            decide["down"] = count
+        # if (count != 0):
+        #     decide["down"] = count
 
-        count = 0
+        # count = 0
 
-        for three in self.s_left:
-            res_left = list()
-            # print(f"Left: {three}")
+        # for three in self.s_left:
+        #     res_left = list()
+        #     # print(f"Left: {three}")
 
-            for i in range(1, 5):
-                aux = (three.pos[0] - i, three.pos[1])
-                res_left.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(1, 5):
+        #         aux = (three.pos[0] - i, three.pos[1])
+        #         res_left.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_left:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
+        #     for val in res_left:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
 
-        if (count != 0):
-            decide["left"] = count
+        # if (count != 0):
+        #     decide["left"] = count
 
-        count = 0
+        # count = 0
 
-        for four in self.s_right:
-            res_right = list()
-            # print(f"Right: {four}")
+        # for four in self.s_right:
+        #     res_right = list()
+        #     # print(f"Right: {four}")
 
-            for i in range(1, 5):
-                aux = (four.pos[0] + i, four.pos[1])
-                res_right.append(self.grid.get_cell_list_contents(aux))
+        #     for i in range(1, 5):
+        #         aux = (four.pos[0] + i, four.pos[1])
+        #         res_right.append(self.grid.get_cell_list_contents(aux))
 
-            for val in res_right:
-                for stuff in val:
-                    if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
-                        count += 1
+        #     for val in res_right:
+        #         for stuff in val:
+        #             if isinstance(stuff, Car) or isinstance(stuff, Ambulance):
+        #                 count += 1
 
-        if (count != 0):
-            decide["right"] = count
+        # if (count != 0):
+        #     decide["right"] = count
 
-        return sorted(decide, key=decide.get, reverse=True)
+        # return sorted(decide, key=decide.get, reverse=True)
 
 
     # SPAWN VEHICLES
     def spawnVehicles(self):
         for location in self.spawn:
-
             if self.curr_cars == self.max_cars:
                 return
 
@@ -793,7 +761,7 @@ class IntersectionModel(mesa.Model):
                 x, y = location # extract the location
                 agent = Car(self.unique_ids, self) # creates agent
 
-                self.schedule.add(agent) # adds agent to scheduler
+                self.vh_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 agent.origin = set_name(x, y)
 
@@ -832,7 +800,7 @@ class IntersectionModel(mesa.Model):
                 # At spawn set self.curr_des to the middle point
                 agent.curr_des = set_middle(agent.origin, agent.destiny)
 
-                move(agent, agent.curr_des)
+                # move(agent, agent.curr_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
 
@@ -840,7 +808,7 @@ class IntersectionModel(mesa.Model):
                 x, y = location # extract the location
                 agent = Ambulance(self.unique_ids, self) # creates agent
 
-                self.schedule.add(agent) # adds agent to scheduler
+                self.vh_scheduler.add(agent) # adds agent to scheduler
                 self.grid.place_agent(agent, (x, y))
                 agent.origin = set_name(x, y)
 
@@ -874,7 +842,7 @@ class IntersectionModel(mesa.Model):
 
                 agent.curr_des = set_middle(agent.origin, agent.destiny)
 
-                move(agent, agent.curr_des)
+                # move(agent, agent.curr_des)
                 self.unique_ids += 1
                 self.curr_cars += 1
             else:
@@ -890,39 +858,40 @@ class IntersectionModel(mesa.Model):
         if self.curr_cars < self.max_cars:
             self.spawnVehicles()
 
-        self.schedule.step()
+        self.tl_scheduler.step() # first make tl detect stuff
+        self.vh_scheduler.step() # then VEHICLES can move
 
         # LIFECYCLE
-        if self.cycle is False:
-            # print("Cycle is false")
-            self.priority = self.get_vel_reads()
-            self.change_tl(self.priority)
+        # if self.cycle is False:
+        #     # print("Cycle is false")
+        #     self.priority = self.get_vel_reads()
+        #     self.change_tl(self.priority)
 
-            if self.priority == []:
-                # print("Priority not found yet")
-                return
-            else:
-                self.vel_time += 1
-                self.cycle = True
+        #     if self.priority == []:
+        #         # print("Priority not found yet")
+        #         return
+        #     else:
+        #         self.vel_time += 1
+        #         self.cycle = True
 
-            # TODO: add that all agents have to stop if light is red
+        #     # TODO: add that all agents have to stop if light is red
 
-        if self.cycle is True:
-            if self.vel_time == 60:
-                self.priority = self.get_tf_reads()
-                self.change_tl(self.priority)
+        # if self.cycle is True:
+        #     if self.vel_time == 60:
+        #         self.priority = self.get_tf_reads()
+        #         self.change_tl(self.priority)
 
-                if self.tf_time == 60:
-                    self.cycle = False
-                    self.vel_time = 0
-                    self.tf_time = 0
-                else:
-                    self.tf_time += 1
-            else:
-                self.vel_time += 1
+        #         if self.tf_time == 60:
+        #             self.cycle = False
+        #             self.vel_time = 0
+        #             self.tf_time = 0
+        #         else:
+        #             self.tf_time += 1
+        #     else:
+        #         self.vel_time += 1
 
         for to_kill in self.kill_agents:
-                self.grid.remove_agent(to_kill)
-                self.schedule.remove(to_kill)
-                self.kill_agents.remove(to_kill)
-                self.curr_cars -= 1
+            self.grid.remove_agent(to_kill)
+            self.vh_scheduler.remove(to_kill)
+            self.kill_agents.remove(to_kill)
+            self.curr_cars -= 1
