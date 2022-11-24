@@ -596,70 +596,81 @@ class IntersectionModel(mesa.Model):
             self.grid.place_agent(agent, (x, y))
             self.unique_ids += 1
 
-        # for key in self.streets:
-        #     for vals in self.streets[key]:
-        #         for side in self.streets[key][vals]:
-        #             x, y = side
-        #             agent = DebugAgents(self.unique_ids, "street", self)
-        #             self.grid.place_agent(agent, (x, y))
-        #             self.unique_ids += 1
+        # TESTING DETECTION OF TRAFFIC LIGHTS
+        tx = [19]
+        ty = [i for i in range(22, 24)]
+
+        for x in x_val_int:
+            for y in y_val_int:
+                agent = Car(self.unique_ids, self)
+                self.grid.place_agent(agent, (x, y))
+                self.unique_ids += 1
+
+        for key in self.streets:
+            for vals in self.streets[key]:
+                for side in self.streets[key][vals]:
+                    x, y = side
+                    agent = DebugAgents(self.unique_ids, "street", self)
+                    self.grid.place_agent(agent, (x, y))
+                    self.unique_ids += 1
 
 
     """ STEP FOR SENSOR """
     def change_tl(self, prio_arr):
-        for conditions in prio_arr:
-            if (conditions == "up"):
-                for lights in self.tl_up:
-                    lights.status = 3
+        pass
+        # for conditions in prio_arr:
+        #     if (conditions == "up"):
+        #         for lights in self.tl_up:
+        #             lights.status = 3
 
-                for lights in self.tl_down:
-                    lights.status = 1
+        #         for lights in self.tl_down:
+        #             lights.status = 1
 
-                for lights in self.tl_left:
-                    lights.status = 1
+        #         for lights in self.tl_left:
+        #             lights.status = 1
 
-                for lights in self.tl_right:
-                    lights.status = 1
+        #         for lights in self.tl_right:
+        #             lights.status = 1
 
-            elif (conditions == "down"):
-                for lights in self.tl_down:
-                    lights.status = 3
+        #     elif (conditions == "down"):
+        #         for lights in self.tl_down:
+        #             lights.status = 3
 
-                for lights in self.tl_up:
-                    lights.status = 1
+        #         for lights in self.tl_up:
+        #             lights.status = 1
 
-                for lights in self.tl_right:
-                    lights.status = 1
+        #         for lights in self.tl_right:
+        #             lights.status = 1
 
-                for lights in self.tl_left:
-                    lights.status = 1
+        #         for lights in self.tl_left:
+        #             lights.status = 1
 
-            elif (conditions == "left"):
+        #     elif (conditions == "left"):
 
-                for lights in self.tl_left:
-                    lights.status = 3
+        #         for lights in self.tl_left:
+        #             lights.status = 3
 
-                for lights in self.tl_down:
-                    lights.status = 1
+        #         for lights in self.tl_down:
+        #             lights.status = 1
 
-                for lights in self.tl_up:
-                    lights.status = 1
+        #         for lights in self.tl_up:
+        #             lights.status = 1
 
-                for lights in self.tl_right:
-                    lights.status = 1
+        #         for lights in self.tl_right:
+        #             lights.status = 1
 
-            else:
-                for lights in self.tl_left:
-                    lights.status = 3
+        #     else:
+        #         for lights in self.tl_left:
+        #             lights.status = 3
 
-                for lights in self.tl_down:
-                    lights.status = 1
+        #         for lights in self.tl_down:
+        #             lights.status = 1
 
-                for lights in self.tl_up:
-                    lights.status = 1
+        #         for lights in self.tl_up:
+        #             lights.status = 1
 
-                for lights in self.tl_right:
-                    lights.status = 3
+        #         for lights in self.tl_right:
+        #             lights.status = 3
 
     """ STEP FOR SENSOR """
     def get_vel_reads(self):
