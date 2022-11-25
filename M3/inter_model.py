@@ -318,41 +318,41 @@ class IntersectionModel(mesa.Model):
         for x in x_val_int:
             for y in y_val_int:
                 self.intersection.append([x, y])
-                agent = DebugAgents(self.unique_ids, "intersection", self)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
+                # agent = DebugAgents(self.unique_ids, "intersection", self)
+                # self.grid.place_agent(agent, (x, y))
+                # self.unique_ids += 1
 
         x_e_1 = [21, 22, 23]
-        y_e_1 = [20, 21]
+        y_e_1 = [21]
 
         for x in x_e_1:
             for y in y_e_1:
                 self.intersection.append([x, y])
-                agent = DebugAgents(self.unique_ids, "intersection", self)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
+                # agent = DebugAgents(self.unique_ids, "intersection", self)
+                # self.grid.place_agent(agent, (x, y))
+                # self.unique_ids += 1
 
         x_e_2 = [18, 19, 20]
-        y_e_2 = [28, 29]
+        y_e_2 = [28]
 
         for x in x_e_2:
             for y in y_e_2:
                 self.intersection.append([x, y])
-                agent = DebugAgents(self.unique_ids, "intersection", self)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
+                # agent = DebugAgents(self.unique_ids, "intersection", self)
+                # self.grid.place_agent(agent, (x, y))
+                # self.unique_ids += 1
 
-        x_e_3 = [16, 17]
+        x_e_3 = [17]
         y_e_3 = [22, 23, 24]
 
         for x in x_e_3:
             for y in y_e_3:
                 self.intersection.append([x, y])
-                agent = DebugAgents(self.unique_ids, "intersection", self)
-                self.grid.place_agent(agent, (x, y))
-                self.unique_ids += 1
+                # agent = DebugAgents(self.unique_ids, "intersection", self)
+                # self.grid.place_agent(agent, (x, y))
+                # self.unique_ids += 1
 
-        x_e_4 = [24, 25]
+        x_e_4 = [24]
         y_e_4 = [25, 26, 27]
 
         for x in x_e_4:
@@ -804,18 +804,27 @@ class IntersectionModel(mesa.Model):
                 self.yellow_light = True
                 self.tl_scheduler.step() # move vehicles
                 self.time += 1
-
-            if self.time == 45:
-
+            elif self.time == 35: # max time
                 # Do while intersection is not empty
                 int_empty = self.check_inter_empty()
+                print(f"Intersection is empty?: {int_empty}")
+
+                print(f"Prio: {self.prio}")
 
                 if int_empty is True:
-                    self.tf_time = 0
-                    self.tf_cycle = False
+                    self.prio.pop(0)
+                    
+                    if self.prio == []:
+                        print("Setting time to 0 and restarting the cycle")
+                        self.time = 0
+                        self.tf_cycle = False
+                        self.yellow_light = False
+                    else:
+                        print(f"Updated prio {self.prio}")
+                        self.time = 0
+                        self.tl_scheduler.step() # move vehicles
                 else:
                     self.vh_scheduler.step() # move vehicles
-
             else:
                 self.vh_scheduler.step() # move vehicles
                 self.time += 1
@@ -861,6 +870,8 @@ class IntersectionModel(mesa.Model):
             print("No cycle is running! Scanning for priority")
             self.prio = self.get_tf_reads() # traffic has priority
 
+            print(f"After scan prio is {self.prio}")
+
             if self.prio == []: # if no traffic then get vel reads
                 self.prio = self.get_vel_reads()
 
@@ -875,8 +886,10 @@ class IntersectionModel(mesa.Model):
 
             else: # tf prio found. Start cycle
                 print("Traffic cycle found!")
-                tf_cycle = True
+                print(f"Current cycle time is {self.time}")
+                self.tf_cycle = True
                 self.tl_scheduler.step()
+                self.vh_scheduler.step()
 
         for to_kill in self.kill_agents:
             try:
@@ -884,6 +897,7 @@ class IntersectionModel(mesa.Model):
                 self.vh_scheduler.remove(to_kill)
                 self.kill_agents.remove(to_kill)
             except:
+                print(self.kill_agents)
                 print("An error happened")
 
             self.curr_cars -= 1
