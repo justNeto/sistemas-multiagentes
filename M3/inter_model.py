@@ -18,6 +18,8 @@ def move(agent):
         else:
             for obj in searching:
                 if isinstance(obj, Sidewalk) or isinstance(obj, Car) or isinstance(obj, Ambulance):
+                    # If looking at direction of Car you find a vehicle then stop return
+
                     cannot_use_step = True
                     break # cannot use this stuff
                 elif isinstance(obj, TrafficLight):
@@ -813,7 +815,7 @@ class IntersectionModel(mesa.Model):
 
                 if int_empty is True:
                     self.prio.pop(0)
-                    
+
                     if self.prio == []:
                         print("Setting time to 0 and restarting the cycle")
                         self.time = 0
@@ -850,7 +852,7 @@ class IntersectionModel(mesa.Model):
 
                 if int_empty is True:
                     self.prio.pop(0)
-                    
+
                     if self.prio == []:
                         print("Setting time to 0 and restarting the cycle")
                         self.time = 0
@@ -891,13 +893,13 @@ class IntersectionModel(mesa.Model):
                 self.tl_scheduler.step()
                 self.vh_scheduler.step()
 
-        for to_kill in self.kill_agents:
-            try:
-                self.grid.remove_agent(to_kill)
-                self.vh_scheduler.remove(to_kill)
-                self.kill_agents.remove(to_kill)
-            except:
-                print(self.kill_agents)
-                print("An error happened")
+        # for to_kill in self.kill_agents:
+        #     try:
+        #         self.grid.remove_agent(to_kill)
+        #         self.vh_scheduler.remove(to_kill)
+        #         self.kill_agents.remove(to_kill)
+        #     except:
+        #         print(self.kill_agents)
+        #         print("An error happened")
 
             self.curr_cars -= 1
