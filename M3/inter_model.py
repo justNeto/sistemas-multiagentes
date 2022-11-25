@@ -6,19 +6,23 @@ import math
 
 def move(agent, to_):
     print("WILL MOVE!")
+    print(f" ::: - CURRENT AGENT LOCATION: {agent.pos}")
 
     # According to status will do some different things.
     if agent.status == 0:
 
-        # Possible gments for an agent
+        # Possible movements for an agent
         possible_steps = agent.model.grid.get_neighborhood(
             agent.pos, moore=False, include_center=False
         )
+
+        print(f"Possible steps: {possible_steps}")
 
         depurated_steps = []
 
         for steps in possible_steps:
             cannot_use_step = False
+            can_use_street = False
             searching = agent.model.grid.get_cell_list_contents([steps])
 
             if len(searching) > 0:
@@ -36,24 +40,47 @@ def move(agent, to_):
                             return
                         if stuff.status == 3:
                             agent.velocity = agent.status + 1
-                        else:
-                            cannot_use_step = False
                     else:
                         x_cur, y_cur = agent.pos
                         curr_loc = [x_cur, y_cur]
+                        x_pos, y_pos = stuff.pos
+                        next_loc = [x_pos, y_pos]
 
-                        print(f"This agent current location is {curr_loc}")
-                        print(f"The model's intersection is {agent.model.intersection}")
+                        for location in agent.model.streets[agent.curr_street][agent.curr_side]:
+                            if next_loc == location:
+                                print("Can use this step as it is inside the current street")
+                                can_use_street = True
+                                break
+
+                        if can_use_street is True:
+                            break
+
+                        print(f"Next location {next_loc} is not inside current street. Checking if inside intersection")
 
                         for val in agent.model.intersection:
-                            if val == curr_loc:
-                                print("Inside intersection")
+                            print(f"Value is {val}")
+                            if curr_loc == val:
                                 agent.inside_int = True
-                                break
-                        print("Not in intersection!")
-                        print(f"Currents agent street is given by {agent.curr_street} and {agent.curr_side}")
+                                print("Current value inside intersection")
 
-            if cannot_use_step:
+                                break # cannot use this step
+                            elif next_loc == val:
+
+                                print("Current value is inside intersection")
+                                for key in agent.model.streets:
+                                    for vals in agent.model.streets[key]:
+                                        for side in agent.model.streets[key][vals]:
+
+                                            if agent.final_des == side:
+                                                agent.curr_street = key # this will be which street
+                                                agent.curr_side = vals # this will be which side of the street
+
+                                print("Next location will be inside intersection")
+                                can_use_street = True
+
+            if cannot_use_step is True:
+                continue
+            elif can_use_street is False:
                 continue
             else:
                 depurated_steps.append(steps)
@@ -76,14 +103,20 @@ def move(agent, to_):
     if agent.status == 1:
 
         for i in range(agent.status):
+
+            # Possible gments for an agent
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
 
+            print(f"Possible steps: {possible_steps}")
+
             depurated_steps = []
 
             for steps in possible_steps:
+                print(f"\n\n | Checking in current step {steps} \n")
                 cannot_use_step = False
+                can_use_street = False
                 searching = agent.model.grid.get_cell_list_contents([steps])
 
                 if len(searching) > 0:
@@ -91,6 +124,7 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+
                         elif isinstance(stuff, TrafficLight):
                             if agent.inside_int == True:
                                 break
@@ -100,26 +134,47 @@ def move(agent, to_):
                                 return
                             if stuff.status == 3:
                                 agent.velocity = agent.status + 1
-                            else:
-                                cannot_use_step = False
                         else:
-                            # print("Checking some stuff!")
                             x_cur, y_cur = agent.pos
                             curr_loc = [x_cur, y_cur]
+                            x_pos, y_pos = stuff.pos
+                            next_loc = [x_pos, y_pos]
 
-                            # print(curr_loc)
-                            # print(agent.model.intersection)
-
-                            for val in agent.model.intersection:
-                                if val == curr_loc:
-                                    # print("Inside intersection")
-                                    agent.inside_int = True
+                            for location in agent.model.streets[agent.curr_street][agent.curr_side]:
+                                if next_loc == location:
+                                    print("Can use this step as it is inside the current street")
+                                    can_use_street = True
                                     break
 
-                if cannot_use_step:
+                            print(f"Next location {next_loc} is not inside current street. Checking if inside intersection")
+
+                            if can_use_street is True:
+                                break
+
+                            for val in agent.model.intersection:
+                                print(f"Value is {val}")
+                                if curr_loc == val:
+                                    agent.inside_int = True
+                                    print("Current value not inside intersection")
+                                    break # cannot use this step
+                                elif next_loc == val:
+
+                                    for key in agent.model.streets:
+                                        for vals in agent.model.streets[key]:
+                                            for side in agent.model.streets[key][vals]:
+
+                                                if agent.final_des == side:
+                                                    agent.curr_street = key # this will be which street
+                                                    agent.curr_side = vals # this will be which side of the street
+
+                                    print("Next location will be inside intersection")
+                                    can_use_street = True
+
+                if cannot_use_step is True:
+                    continue
+                elif can_use_street is False:
                     continue
                 else:
-                    # print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
@@ -134,12 +189,15 @@ def move(agent, to_):
                 if (aux < min):
                     best = new_point
                     min = aux
+
+            print(best)
 
             agent.model.grid.move_agent(agent, tuple(e for e in best))
 
     if agent.status == 2:
         for i in range(agent.status):
 
+            # Possible gments for an agent
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
@@ -147,7 +205,9 @@ def move(agent, to_):
             depurated_steps = []
 
             for steps in possible_steps:
+                print(f"\n\n | Checking in current step {steps} \n")
                 cannot_use_step = False
+                can_use_street = False
                 searching = agent.model.grid.get_cell_list_contents([steps])
 
                 if len(searching) > 0:
@@ -155,6 +215,7 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+
                         elif isinstance(stuff, TrafficLight):
                             if agent.inside_int == True:
                                 break
@@ -164,26 +225,47 @@ def move(agent, to_):
                                 return
                             if stuff.status == 3:
                                 agent.velocity = agent.status + 1
-                            else:
-                                cannot_use_step = False
                         else:
-                            print("Checking some stuff!")
                             x_cur, y_cur = agent.pos
                             curr_loc = [x_cur, y_cur]
+                            x_pos, y_pos = stuff.pos
+                            next_loc = [x_pos, y_pos]
 
-                            print(curr_loc)
-                            print(agent.model.intersection)
-
-                            for val in agent.model.intersection:
-                                if val == curr_loc:
-                                    print("Inside intersection")
-                                    agent.inside_int = True
+                            for location in agent.model.streets[agent.curr_street][agent.curr_side]:
+                                if next_loc == location:
+                                    print("Can use this step as it is inside the current street")
+                                    can_use_street = True
                                     break
 
-                if cannot_use_step:
+                            print(f"Next location {next_loc} is not inside current street. Checking if inside intersection")
+
+                            if can_use_street is True:
+                                break
+
+                            for val in agent.model.intersection:
+                                print(f"Value is {val}")
+                                if curr_loc == val:
+                                    agent.inside_int = True
+                                    print("Current value not inside intersection")
+                                    break # cannot use this step
+                                elif next_loc == val:
+
+                                    for key in agent.model.streets:
+                                        for vals in agent.model.streets[key]:
+                                            for side in agent.model.streets[key][vals]:
+
+                                                if agent.final_des == side:
+                                                    agent.curr_street = key # this will be which street
+                                                    agent.curr_side = vals # this will be which side of the street
+
+                                    print("Next location will be inside intersection")
+                                    can_use_street = True
+
+                if cannot_use_step is True:
+                    continue
+                elif can_use_street is False:
                     continue
                 else:
-                    print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
@@ -201,18 +283,22 @@ def move(agent, to_):
 
             agent.model.grid.move_agent(agent, tuple(e for e in best))
 
-
     if agent.status == 3:
+
         for i in range(agent.status):
 
             possible_steps = agent.model.grid.get_neighborhood(
                 agent.pos, moore=False, include_center=False
             )
 
+            print(f"Possible steps: {possible_steps}")
+
             depurated_steps = []
 
             for steps in possible_steps:
+                print(f"\n\n | Checking in current step {steps} \n")
                 cannot_use_step = False
+                can_use_street = False
                 searching = agent.model.grid.get_cell_list_contents([steps])
 
                 if len(searching) > 0:
@@ -220,6 +306,7 @@ def move(agent, to_):
                         if isinstance(stuff, Car) or isinstance(stuff, Ambulance) or isinstance(stuff, Sidewalk):
                             cannot_use_step = True
                             break
+
                         elif isinstance(stuff, TrafficLight):
                             if agent.inside_int == True:
                                 break
@@ -231,24 +318,50 @@ def move(agent, to_):
                                 agent.velocity = agent.status + 1
                             else:
                                 cannot_use_step = False
+                                # CHECK THIS BECAUSE DOES NOT MAKE SENSE
                         else:
-                            print("Checking some stuff!")
                             x_cur, y_cur = agent.pos
                             curr_loc = [x_cur, y_cur]
+                            x_pos, y_pos = stuff.pos
+                            next_loc = [x_pos, y_pos]
 
-                            print(curr_loc)
-                            print(agent.model.intersection)
 
-                            for val in agent.model.intersection:
-                                if val == curr_loc:
-                                    print("Inside intersection")
-                                    agent.inside_int = True
+                            for location in agent.model.streets[agent.curr_street][agent.curr_side]:
+                                if next_loc == location:
+                                    print("Can use this step as it is inside the current street")
+                                    can_use_street = True
                                     break
 
-                if cannot_use_step:
+                            print(f"Next location {next_loc} is not inside current street. Checking if inside intersection")
+
+                            if can_use_street is True:
+                                break
+
+                            for val in agent.model.intersection:
+                                print(f"Value is {val}")
+                                if curr_loc == val:
+                                    agent.inside_int = True
+                                    print("Current value not inside intersection")
+                                    break # cannot use this step
+                                elif next_loc == val:
+
+                                    for key in agent.model.streets:
+                                        for vals in agent.model.streets[key]:
+                                            for side in agent.model.streets[key][vals]:
+
+                                                if agent.final_des == side:
+                                                    agent.curr_street = key # this will be which street
+                                                    agent.curr_side = vals # this will be which side of the street
+
+                                    print("Next location will be inside intersection")
+                                    can_use_street = True
+
+
+                if cannot_use_step is True:
+                    continue
+                elif can_use_street is False:
                     continue
                 else:
-                    print(steps)
                     depurated_steps.append(steps)
 
             if (len(depurated_steps) == 0):
@@ -295,8 +408,13 @@ class TrafficLight(mesa.Agent):
         self.direction = direction
 
     def step(self):
+        if self.model.yellow_light is True:
+            if self.status == 3:
+                self.status = 2
+                return
+
         if self.model.prio == []:
-            print("No queue found. Traffic lights will be set to 0")
+            # print("No queue found. Traffic lights will be set to 0")
             self.status = 0
             return
         else:
@@ -378,6 +496,8 @@ class IntersectionModel(mesa.Model):
 
         self.tf_cycle = False
         self.vel_cycle = False
+
+        self.yellow_light = False
 
         # Sidewalks:
         x_val = np.union1d(np.array([i for i in range(18)]), np.array([i for i in range(24, 50)]))
@@ -830,6 +950,8 @@ class IntersectionModel(mesa.Model):
 
     # SPAWN VEHICLES
     def spawnVehicles(self):
+        random.shuffle(self.spawn)
+
         for location in self.spawn:
             if self.curr_cars == self.max_cars:
                 return
@@ -877,8 +999,8 @@ class IntersectionModel(mesa.Model):
                                 for side in self.streets[key][vals]:
 
                                     if spawn_pos == side:
-                                        agent.curr_side = key # this will be which street
-                                        agent.curr_street = vals # this will be which side of the street
+                                        agent.curr_street = key # this will be which street
+                                        agent.curr_side = vals # this will be which side of the street
                         break
 
                 if self.debug is True:
@@ -928,8 +1050,8 @@ class IntersectionModel(mesa.Model):
                                 for side in self.streets[key][vals]:
 
                                     if spawn_pos == side:
-                                        agent.curr_street = key
-                                        agent.curr_side = vals
+                                        agent.curr_street = key # this will be which street
+                                        agent.curr_side = vals # this will be which side of the street
                         break
 
                 if self.debug is True:
@@ -943,6 +1065,20 @@ class IntersectionModel(mesa.Model):
                 continue
 
 
+    def check_inter_empty(self):
+        vehicles = [agents for agents in self.vh_scheduler.agents]
+
+        for location in self.intersection:
+            for vehicle in vehicles:
+                x_v, y_v = vehicle.pos
+                compare = [x_v, y_v]
+
+                if compare == location:
+                    return False
+
+        return True
+
+
     def step(self):
 
         # if self.debug is True:
@@ -953,15 +1089,23 @@ class IntersectionModel(mesa.Model):
             self.spawnVehicles()
 
         print("Vehicles have spawned!")
+        print(self.intersection)
 
         if self.tf_cycle is True: # if there is a cycle active
 
-            print("Traffic cycle is running!")
+            print(":::- Traffic cycle is running!")
+            print(self.time)
 
-            if self.time == 40:
+            if self.time == 20:
+                # Set current traffic light in green to yellow
+                self.yellow_light = True
+                self.tl_scheduler.step() # move vehicles
+                self.time += 1
+
+            if self.time == 30:
 
                 # Do while intersection is not empty
-                int_empty = self.check_int_empty()
+                int_empty = self.check_inter_empty()
 
                 if int_empty is True:
                     self.tf_time = 0
@@ -975,16 +1119,31 @@ class IntersectionModel(mesa.Model):
 
         elif self.vel_cycle is True:
 
-            print("Velocity cycle is running!")
+            print(":::- Velocity cycle is running!")
+            print(self.time)
 
-            if self.time == 40:
+            if self.time == 10:
+                # Set current traffic light in green to yellow
+                self.yellow_light = True
+                self.tl_scheduler.step() # move vehicles
+                self.time += 1
+
+            elif self.time == 20: # max time
 
                 # Do while intersection is not empty
                 int_empty = self.check_inter_empty()
+                print(f"Intersection is empty?: {int_empty}")
 
-                if int_empty is True:
+                if int_empty is True and self.prio == []:
+                    print("Setting time to 0")
                     self.time = 0
-                    self.tf_cycle = False
+                    self.vel_cycle = False
+                    self.yellow_light = False
+                elif int_empty is True and self.prio != []:
+                    self.prio.pop(0)
+                    self.yellow_light = False
+                    self.tl_scheduler.step() # move vehicles
+                    self.time = 0
                 else:
                     self.vh_scheduler.step() # move vehicles
 
@@ -1003,7 +1162,7 @@ class IntersectionModel(mesa.Model):
                     self.tl_scheduler.step()
                 else:
                     print("Vel cycle found!")
-                    vel_cycle = True
+                    self.vel_cycle = True
                     self.tl_scheduler.step()
 
             else: # tf prio found. Start cycle
